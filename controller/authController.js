@@ -4,16 +4,15 @@ const jwt = require('jsonwebtoken');
 //Controller for Register User
 exports.registerUser = async (req, res) => {
   const newUser = new User({
-    username: req.body.username,
+    iduser: req.body.iduser,
     email: req.body.email,
     password: CryptoJS.AES.encrypt(
       req.body.password,
       process.env.PASS_SEC
     ).toString(), //for hashed pass
-    country: req.body.country || "Not Added",
-    city: req.body.city || "Not Added",
-    address: req.body.address || "Not Added",
-    phone: req.body.phone || "Not Added",
+    nom: req.body.nom || "Not Added",
+    prenom: req.body.prenom || "Not Added",
+    num: req.body.num || "Not Added",
     image: req.body.image || "user.png",
   });
 
@@ -28,7 +27,8 @@ exports.registerUser = async (req, res) => {
 //Controller for Login User
 exports.loginUser = async (req, res) => {
   try {
-    const user = await User.findOne({ username: req.body.username });
+    const user = await User.findOne({ email: req.body.email
+     });
     !user && res.status(401).json("we dont have this user");
 
     const hashedPassword = CryptoJS.AES.decrypt(

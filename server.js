@@ -3,6 +3,8 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const AuthRoutes = require ("./router/authRoute.js");
 const UserRoutes = require ("./router/userRoutes.js");
+const serviceroute = require ("./router/serviceRoute.js");
+
 const app = express();
 
 const port = 3000;
@@ -13,6 +15,8 @@ app.listen(port, () => console.log("le serveur a demarré au port " + port))
 
 app.use("/api/auth", AuthRoutes);
 app.use("/api/user", UserRoutes);
+app.use("/api/service", serviceroute);
+
 
 
 //Connect with DB
