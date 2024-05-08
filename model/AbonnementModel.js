@@ -1,5 +1,4 @@
-import { Double } from "mongodb";
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 //Create table for abonnement
 const abonnementSchema = new mongoose.Schema({
@@ -16,4 +15,4 @@ const abonnementSchema = new mongoose.Schema({
 }, );
 
 const abonnement = mongoose.model('abonnement', abonnementSchema);
-export default abonnement;
+module.exports = abonnement;
