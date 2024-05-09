@@ -4,29 +4,16 @@ const CryptoJS = require('crypto-js');
 
 //Controller for update User info
 exports.updateUser = async (req, res) => {
-    const user = await User.findById(req.body._id);
-    //if user exists
-    if (user) {
-        user.iduser = req.body.iduser || user.iduser;
-        user.email = req.body.email || user.email;
-        user.nom = req.body.nom || user.nom;
-        user.prenom = req.body.prenom || user.prenom;
-        user.num = req.body.num || user.num;
-
-        const updatedUser = await user.save();
-
-        res.send({
-            _id: updatedUser._id,
-            iduser: updatedUser.iduser,
-            email: updatedUser.email,
-            nom: updatedUser.nom,
-            prenom: updatedUser.prenom,
-            num: updatedUser.num,
-            image: updatedUser.image,
-            isAdmin: updatedUser.isAdmin,
-        });
-    } else {
-        res.status(401).send({ message: 'User not Found!' });
+    try {
+        const user = req.user;
+        const userFinded = await User.findByIdAndUpdate(user._id, { $set: req.body });
+        //if user exists
+        if (!userFinded) {
+            return res.status(500).json({ message: "User not found" });
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 }
 
@@ -34,7 +21,7 @@ exports.updateUser = async (req, res) => {
 exports.updatePassword = async (req, res) => {
     try {
 
-        const user = await User.findByIdAndUpdate({ _id: req.body._id });
+        const user = await User.findById(req.user._id);
         !user && res.status(401).json('Wrong credentials!');
 
         const hashedPassword = CryptoJS.AES.decrypt(user.password, process.env.PASS_SEC);
@@ -69,34 +56,34 @@ exports.deleteAccount = async (req, res) => {
 }
 
 //Controller for update User image
-exports.updateImage = async(req, res) => {
-    if(req.body.userId === req.params.id) {
-        try {
-            await User.findByIdAndUpdate(req.params.id, {
-                $set: req.body,
-            });
-            res.status(200).json("Image has been updated");
-        } catch (err) {
-            return res.status(500).json(err);
-        }
-    } else {
-        return res.status(403).json("You can update only your account!");
+exports.updateImage = async (req, res) => {
+    const user = req.user;
+    try {
+        await User.findByIdAndUpdate(user._id, {
+            $set: {
+                image: req.body.image
+            },
+        }, { new: true });
+        res.status(200).json("Image has been updated");
+    } catch (err) {
+        return res.status(500).json(err);
     }
+
 }
 
 //Controller for Get all User
-exports.getAllUsers = async(req, res) => {
+exports.getAllUsers = async (req, res) => {
     const users = await User.find();
 
     res.send(users);
 }
 
 //Controller for count Users
-exports.countUsers = async(req, res) => {
+exports.countUsers = async (req, res) => {
     try {
         const countAllUsers = await User.countDocuments();
-        res.status(200).json({count: countAllUsers});
-    } catch(error) {
+        res.status(200).json({ count: countAllUsers });
+    } catch (error) {
         return res.status(500).json(error);
     }
 }
