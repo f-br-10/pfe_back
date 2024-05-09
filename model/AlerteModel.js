@@ -1,3 +1,4 @@
+//AlerteModel.js
 import mongoose from "mongoose";
 
 //Create table for alerte

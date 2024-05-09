@@ -1,3 +1,4 @@
+//AbonnementModel.js
 const mongoose = require("mongoose");
 
 //Create table for abonnement
@@ -10,7 +11,6 @@ const abonnementSchema = new mongoose.Schema({
     date_fin: { type: Date, required: true },
     cout: { type: Number, required: true },
     statut: { type: String, required: true },
-    nombre_abonnement: { type: Number, required: true },
 
 }, );
 
