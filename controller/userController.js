@@ -1,3 +1,4 @@
+//userController.js
 const User = require("../model/userModel.js");
 const CryptoJS = require('crypto-js');
 
