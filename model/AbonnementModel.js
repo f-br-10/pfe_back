@@ -4,7 +4,6 @@ const mongoose = require("mongoose");
 //Create table for abonnement
 const abonnementSchema = new mongoose.Schema({
 
-    idabonnement: { type: Number, required: true, unique: true }, 
     nom: { type: Number, required: true },
     date_debut: { type: Date, required: true },
     date_fin: { type: Date, required: true },

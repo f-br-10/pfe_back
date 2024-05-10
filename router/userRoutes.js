@@ -8,10 +8,10 @@ const UserRoutes = express.Router();
 UserRoutes.get('/allUsers', getAllUsers);
 
 //Update User Info
-UserRoutes.put('/update',verifyToken, updateUser);
+UserRoutes.patch('/update',verifyToken, updateUser);
 
 //Update User Password
-UserRoutes.put('/updatePassword',verifyToken, updatePassword);
+UserRoutes.patch('/updatePassword',verifyToken, updatePassword);
 
 //Delete User Account
 UserRoutes.delete('/:id', deleteAccount);
