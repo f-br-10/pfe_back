@@ -11,7 +11,7 @@ module.exports = {
       }
     ],
     engagementDate : "2020-05-08",
-    expirationDate : "2024-05-08",
+    expirationDate : "2024-05-30",
     nextBillingDate : "2024-05-08",
     plan : {
       code : "string",
