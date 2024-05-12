@@ -14,6 +14,8 @@ exports.registerUser = async (req, res) => {
     prenom: req.body.prenom || "Not Added",
     num: req.body.num || "Not Added",
     image: req.body.image || "user.png",
+    isAdmin: req.body.isAdmin
+    
   });
 
   try {
