@@ -11,6 +11,6 @@ settingsRoutes.get('/:userId', getUserSettings);
 settingsRoutes.post('/:userId', addUserSettings);
 
 // Route pour mettre à jour les paramètres de notification d'un utilisateur
-settingsRoutes.patch('/:userId', updateUserSettings);
+settingsRoutes.patch('/:setting', updateUserSettings);
 
 module.exports = settingsRoutes;
