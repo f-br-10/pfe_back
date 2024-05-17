@@ -46,6 +46,5 @@ mongoose
   cron.schedule('0 0 * * *', () => {
     // Fonction à exécuter tous les jours à minuit
     compareServiceExpirationDateWithUserSettings();
-      
   });
   

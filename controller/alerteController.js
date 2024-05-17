@@ -5,12 +5,13 @@ const User = require("../model/userModel.js");
 
 async function compareServiceExpirationDateWithUserSettings() {
   try {
+    
     // Récupérer tous les utilisateurs
     const users = await User.find();
-
+    
     // Parcourir tous les utilisateurs
     for (const user of users) {    
-
+      
       // Vérifier si l'utilisateur a des services associés
       if (user.services && user.services.length > 0) {
         // Parcourir les services associés à l'utilisateur
@@ -21,7 +22,6 @@ async function compareServiceExpirationDateWithUserSettings() {
             console.error(`Service not found with ID ${serviceId} for user ${user._id}`);
             continue;
           }
-
           // Calculer la différence entre la date d'expiration et la date actuelle
           const expirationDate = new Date(service.date_fin);
           expirationDate.setHours(0, 0, 0, 0);
@@ -69,7 +69,8 @@ async function getAlertesByUserId(req, res) {
   try {
     const userId = req.user._id; 
     const alertes = await Alerte.find({ userId }).populate('serviceId');
-    res.status(200).json(alertes);
+    let unreadAlertes = alertes.filter(alerte => alerte.statut === 'unread');
+    res.status(200).json({ alertes: alertes, unreadAlertes: unreadAlertes });
   } catch (error) {
     res.status(500).send('Erreur lors de la récupération des alertes de l\'utilisateur: ' + error.message);
   }

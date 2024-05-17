@@ -3,8 +3,9 @@
 const express = require('express');
 const serviceroute = express.Router();
 const serviceController = require('../controller/serviceController');
+const { verifyToken } = require('../verifyToken');
 
-serviceroute.post('/create', serviceController.createService);
+serviceroute.post('/create',verifyToken, serviceController.createService);
 
 serviceroute.get('/remainingTime', serviceController.calculateRemainingTime);
 

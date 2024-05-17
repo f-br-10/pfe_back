@@ -1,6 +1,7 @@
 // serviceController.js
 const exampleResponse = require('../exempleResponse.js');
 const Service = require('../model/ServiceModel');
+const User = require('../model/userModel.js');
 const ovh = require('../ovhinit.js');
 
 async function fetchAndStoreServices() {
@@ -31,7 +32,12 @@ async function fetchAndStoreServices() {
 
 async function createService(req, res) {
   try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    if(!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
     const newService = await Service.create(req.body);
+    user.services.push(newService._id);
+    await user.save();
     return res.status(201).json(newService);
   } catch (error) {
     console.error('Erreur lors de la création du service:', error);
