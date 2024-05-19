@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser } = require('../controller/authController');
+const { registerUser, loginUser, forgetPasswordRequest, resetPasswordVerification } = require('../controller/authController');
 
 const AuthRoutes = express.Router();
 
@@ -8,6 +8,10 @@ AuthRoutes.post('/register', registerUser);
 
 // Login User
 AuthRoutes.post('/login', loginUser);
+
+AuthRoutes.post("/forget-password", forgetPasswordRequest);
+
+AuthRoutes.put("/create-password/:activation_Token",resetPasswordVerification)
 
 module.exports = AuthRoutes;
 
