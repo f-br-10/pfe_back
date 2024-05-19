@@ -10,7 +10,7 @@ const settingsRoutes = require ("./router/settingsRoutes.js");
 const alerteRoutes = require ("./router/alerteRoutes.js");
 const serviceController = require('./controller/serviceController');
 const { compareServiceExpirationDateWithUserSettings } = require('./controller/alerteController');
-
+const path = require("path");
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -19,7 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 const port = 3000;
 dotenv.config();
 
-app.listen(port, () => console.log("le serveur a demarré au port " + port))
+app.listen(port, () => console.log("le serveur a demarré au port " + port));
+app.use("/", express.static(path.join(__dirname, "./uploads")));
 
 
 app.use("/api/auth", AuthRoutes);
