@@ -2,20 +2,11 @@
 const User = require("../model/userModel.js");
 const Service = require('../model/ServiceModel');
 const CryptoJS = require('crypto-js');
-const { deleteFile } = require("../utils/file-utils.js");
-const path = require("path");
 
 //Controller for update User info
 exports.updateUser = async (req, res) => {
     try {
         const user = req.user;
-        const file = req.file;
-        if (file) {
-            req.body.image = file.filename;
-            if(user.image) {
-              deleteFile(path.join(__dirname, `../uploads/${user.image}`));
-            }
-        }
         const userFinded = await User.findByIdAndUpdate(user._id, { $set: req.body },{new:true});
         //if user exists
         if (!userFinded) {
