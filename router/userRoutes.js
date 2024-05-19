@@ -1,6 +1,7 @@
 const express = require('express');
 const { countUsers, deleteAccount,getProfile, getAllUsers, updatePassword, updateUser , assignServicesToUser } = require('../controller/userController.js');
 const { verifyToken , verifyTokenAndAdmin} = require('../verifyToken.js');
+const { upload } = require('../utils/multer.js');
 
 const UserRoutes = express.Router();
 
@@ -13,7 +14,7 @@ UserRoutes.get('/userinfo',verifyToken, getProfile);
 
 
 //Update User Info
-UserRoutes.patch('/update',verifyToken, updateUser);
+UserRoutes.patch('/update',verifyToken, upload.single("image"), updateUser);
 
 //Update User Password
 UserRoutes.patch('/change-password ',verifyToken, updatePassword);
