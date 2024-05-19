@@ -5,18 +5,25 @@ const CryptoJS = require('crypto-js');
 
 //Controller for update User info
 exports.updateUser = async (req, res) => {
-    try {
-        const user = req.user;
-        const userFinded = await User.findByIdAndUpdate(user._id, { $set: req.body },{new:true});
-        //if user exists
-        if (!userFinded) {
-            return res.status(500).json({ message: "User not found" });
-        }
-        return res.status(200).json(userFinded);
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
+  try {
+      const user = req.user;
+      const file = req.file;
+      if (file) {
+          req.body.image = file.filename;
+          if(user.image) {
+            deleteFile(path.join(__dirname, `../uploads/${user.image}`));
+          }
+      }
+      const userFinded = await User.findByIdAndUpdate(user._id, { $set: req.body },{new:true});
+      //if user exists
+      if (!userFinded) {
+          return res.status(500).json({ message: "User not found" });
+      }
+      return res.status(200).json(userFinded);
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal Server Error" });
+  }
 }
 
 //Controller for update Password

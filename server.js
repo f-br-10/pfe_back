@@ -12,6 +12,7 @@ const ovhReclamationRoute = require ("./router/ovhReclamationRoute.js");
 const serviceController = require('./controller/serviceController'); 
 const {fetchAndStoreReclamations} = require('./controller/ovhReclamationController')
 const { compareServiceExpirationDateWithUserSettings } = require('./controller/alerteController');
+const path = require("path");
 
 const app = express();
 app.use(express.json());
@@ -22,6 +23,8 @@ const port = 3000;
 dotenv.config();
 
 app.listen(port, () => console.log("le serveur a demarré au port " + port))
+
+app.use("/", express.static(path.join(__dirname, "./uploads")));
 
 
 app.use("/api/auth", AuthRoutes);
