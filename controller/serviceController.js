@@ -8,19 +8,28 @@ async function fetchAndStoreServices() {
   try {
     // Récupérer la liste des services OVH
     const response = await ovh.requestPromised('GET', '/service');
-    
+    const allServices = await Service.find();
     // Traiter la réponse de l'API OVH
     for (const service of response) {
       try {
         // Récupérer les détails de chaque service
         const serviceDetails = await ovh.request('GET', `/services/${service.id}`);
-        // Créer un document Service mongoose avec les détails du service et l'enregistrer dans la base de données
-        await Service.create({
-          nom: serviceDetails.nom,
-          date_debut: new Date(serviceDetails.engagementDate),
-          date_fin: new Date(serviceDetails.expirationDate),
-          statut: serviceDetails.state,
-        });
+        for (const serviceModel of allServices) {
+          if (serviceModel.nom.toLowerCase() === serviceDetails.resource.name.toLowerCase()) {
+            serviceModel.date_debut = new Date(serviceDetails.engagementDate);
+            serviceModel.date_fin = new Date(serviceDetails.expirationDate);
+            serviceModel.statut = serviceDetails.state
+          } else {
+            // Créer un document Service mongoose avec les détails du service et l'enregistrer dans la base de données
+            await Service.create({
+              nom: serviceDetails.resource.name,
+              date_debut: new Date(serviceDetails.engagementDate),
+              date_fin: new Date(serviceDetails.expirationDate),
+              statut: serviceDetails.state,
+            });
+          }
+        }
+
       } catch (error) {
         console.error('Erreur lors de la récupération et du stockage des détails du service OVH:', error);
       }
@@ -34,7 +43,7 @@ async function createService(req, res) {
   try {
     const userId = req.user._id;
     const user = await User.findById(userId);
-    if(!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
     const newService = await Service.create(req.body);
     user.services.push(newService._id);
     await user.save();
@@ -114,5 +123,5 @@ function calculateRemainingTime(req, res) {
 }
 
 module.exports = {
-   createService , getServiceById ,getAllServices ,updateService ,deleteService ,calculateRemainingTime ,fetchAndStoreServices 
+  createService, getServiceById, getAllServices, updateService, deleteService, calculateRemainingTime, fetchAndStoreServices
 };
