@@ -1,4 +1,4 @@
-// routes/settingsRoutes.js
+// settingsRoutes.js
 const express  = require('express');
 const { getUserSettings, updateUserSettings, addUserSettings } = require('../controller/settingsController.js');
 

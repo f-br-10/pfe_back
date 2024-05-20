@@ -1,12 +1,20 @@
-// serviceroutes.js
+// serviceroute.js
 
 const express = require('express');
 const serviceroute = express.Router();
 const serviceController = require('../controller/serviceController');
+const { verifyToken } = require('../verifyToken');
 
-// Route pour récupérer les détails d'un service OVH
-serviceroute.get('/services/:serviceId', serviceController.getServiceDetails);
-serviceroute.get('/services', serviceController.getServices);
+serviceroute.post('/create',verifyToken, serviceController.createService);
+
 serviceroute.get('/remainingTime', serviceController.calculateRemainingTime);
+
+serviceroute.get('/getallservices', serviceController.getAllServices); 
+
+serviceroute.get('/getservice/:id', serviceController.getServiceById);
+
+serviceroute.patch('/updateservice/:id', serviceController.updateService);
+
+serviceroute.delete('/deleteservices/:id', serviceController.deleteService);
 
 module.exports = serviceroute;

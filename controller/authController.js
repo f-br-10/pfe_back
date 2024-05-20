@@ -2,8 +2,11 @@
 const User = require("../model/userModel.js");
 const CryptoJS = require('crypto-js');
 const jwt = require('jsonwebtoken');
+const { createChangePasswordLink } = require("../service/authService.js");
 //Controller for Register User
 exports.registerUser = async (req, res) => {
+  const user = await User.findOne({email:req.body.email});
+  if (user) return res.status(400).json("User already exists");
   const newUser = new User({
     email: req.body.email,
     password: CryptoJS.AES.encrypt(
@@ -58,3 +61,49 @@ exports.loginUser = async (req, res) => {
     return error;
   }
 };
+
+exports.forgetPasswordRequest = async (req, res) => {
+  try {
+    const user = await User.findOne({ email:req.body.email });
+    if (!user) return res.status(404).json("User not found");
+    await createChangePasswordLink(user._id);
+    res.status(200).json("Password reset link sent to your email account");
+  }
+  catch (error) {
+    console.log(error);
+    res.status(500).json({message:"Internal Server Error"});
+  }
+}
+exports.resetPasswordVerification = async (req, res) => {
+  try {
+    const { activation_Token } = req.params;
+    const { newPassword } = req.body;
+    const verifiedUser = jwt.verify(activation_Token, process.env.JWT_SEC)
+    if (!verifiedUser) {
+      return res.status(400).json({ message: "Invalid Token" });
+    }
+    const { userEmail } = verifiedUser;
+    if (!userEmail) {
+      return res.status(400).json({ message: "Activation token is fake" });
+    }
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    const hashPassword = CryptoJS.AES.encrypt(
+      newPassword,
+      process.env.PASS_SEC
+    ).toString();
+    user.password = hashPassword;
+    await user.save();
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError') {
+      // Handle invalid token
+      return res.status(400).json({ message: "Invalid Token" });
+    } else {
+      // Handle other errors (e.g., token expired)
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+}
