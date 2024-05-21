@@ -26,6 +26,22 @@ exports.updateUser = async (req, res) => {
   }
 }
 
+exports.updateUserRole = async(req,res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+    user.isAdmin = req.body.isAdmin;
+    await user.save();
+    return res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+
+}
+
 //Controller for update Password
 exports.updatePassword = async (req, res) => {
     try {
