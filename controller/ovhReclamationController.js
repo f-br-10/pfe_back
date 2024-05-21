@@ -89,6 +89,16 @@ async function createOvhReclamation(req, res) {
   }
 }
 
+async function deleteOvhReclamation(req,res) {
+  try {
+    const { id } = req.params;
+    const deletedReclamation = await Reclamation.findByIdAndDelete(id);
+    res.status(200).json(deletedReclamation);
+  } catch (error) {
+    res.status(500).send('Erreur lors de la suppression de la réclamation OVH: ' + error.message);
+  }
+}
+
 // Mettre à jour une réclamation OVH
 async function updateOvhReclamation(req, res) {
   try {
@@ -141,4 +151,5 @@ module.exports = {
   closeOvhReclamation, 
   getAllReclamations, 
   getReclamationById, 
+  deleteOvhReclamation
 };

@@ -8,7 +8,7 @@ async function createClient(req, res) {
     const userId = req.user._id;
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
-    
+
     const newClient = await Client.create(req.body);
     return res.status(201).json(newClient);
   } catch (error) {
@@ -34,8 +34,16 @@ async function getClientById(req, res) {
 // Récupérer tous les client
 async function getAllClients(req, res) {
   try {
-    const clients = await Client.find();
-    return res.json(clients);
+    const user = req.user;
+    const userFinded = await User.findById(user._id);
+    if(!userFinded) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    if (userFinded.isAdmin) {
+      const clients = await Client.find().populate("services");
+      return res.json(clients);
+    } else {
+      const clients = await Client.find({services: { $in: userFinded.services }}).populate("services");
+      return res.json(clients);
+    }
   } catch (error) {
     console.error('Erreur lors de la récupération des clients:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération des clients' });
@@ -71,31 +79,31 @@ async function deleteClient(req, res) {
 }
 
 
-async function assignServicesToClient (req, res)  {
-    try {
-        const { clientId, serviceIds } = req.body;
+async function assignServicesToClient(req, res) {
+  try {
+    const { clientId, serviceIds } = req.body;
 
-        // Vérifier si le client existe
-        const client = await Client.findById(clientId);
-        if (!client) {
-            return res.status(404).json({ message: 'Client not found' });
-        }
-
-        // Vérifier si les services existent
-        const services = await Service.find({ _id: { $in: serviceIds } });
-        if (!services || services.length !== serviceIds.length) {
-            return res.status(404).json({ message: 'One or more services not found' });
-        }
-
-        // Assigner les services au client
-        client.services = serviceIds;
-        await client.save();
-
-        return res.status(200).json({ message: 'Services assigned to client successfully' });
-    } catch (error) {
-        console.error('Error assigning services to client:', error);
-        res.status(500).json({ message: 'Internal server error' });
+    // Vérifier si le client existe
+    const client = await Client.findById(clientId);
+    if (!client) {
+      return res.status(404).json({ message: 'Client not found' });
     }
+
+    // Vérifier si les services existent
+    const services = await Service.find({ _id: { $in: serviceIds } });
+    if (!services || services.length !== serviceIds.length) {
+      return res.status(404).json({ message: 'One or more services not found' });
+    }
+
+    // Assigner les services au client
+    client.services = serviceIds;
+    await client.save();
+
+    return res.status(200).json({ message: 'Services assigned to client successfully' });
+  } catch (error) {
+    console.error('Error assigning services to client:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 };
 
 
@@ -104,6 +112,6 @@ module.exports = {
   getClientById,
   getAllClients,
   updateClient,
-  deleteClient, 
+  deleteClient,
   assignServicesToClient
 };

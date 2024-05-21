@@ -77,6 +77,18 @@ async function getAllServices(req, res) {
   }
 }
 
+async function getServicesWithUser(req,res) {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).populate('services');
+    if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    return res.json(user.services);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des services de l\'utilisateur:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des services de l\'utilisateur' });
+  }
+}
+
 async function updateService(req, res) {
   try {
     const updatedService = await Service.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -123,5 +135,5 @@ function calculateRemainingTime(req, res) {
 }
 
 module.exports = {
-  createService, getServiceById, getAllServices, updateService, deleteService, calculateRemainingTime, fetchAndStoreServices
+  createService, getServiceById, getAllServices, updateService, deleteService, calculateRemainingTime, fetchAndStoreServices,getServicesWithUser
 };

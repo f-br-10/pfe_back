@@ -4,17 +4,17 @@ const { verifyToken , verifyTokenAndAdmin} = require('../verifyToken.js');
 const reclamation = express.Router();
 
 const {
-  fetchAndStoreReclamations,
   createOvhReclamation,
   updateOvhReclamation,
   closeOvhReclamation, 
-  getAllReclamations
+  getAllReclamations,
+  deleteOvhReclamation
 } = require('../controller/ovhReclamationController');
 
 
 // Route pour créer une nouvelle réclamation OVH
 reclamation.post('/create', createOvhReclamation);
-
+reclamation.delete("/delete-reclamation/:id", deleteOvhReclamation);
 // Route pour mettre à jour une réclamation OVH
 reclamation.post('/update/:ticketId', updateOvhReclamation);
 

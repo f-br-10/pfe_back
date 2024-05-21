@@ -10,6 +10,7 @@ serviceroute.post('/create',verifyToken, serviceController.createService);
 serviceroute.get('/remainingTime', serviceController.calculateRemainingTime);
 
 serviceroute.get('/getallservices', serviceController.getAllServices); 
+serviceroute.get("/getserviceswithuser", verifyToken, serviceController.getServicesWithUser);
 
 serviceroute.get('/getservice/:id', serviceController.getServiceById);
 

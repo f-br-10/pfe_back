@@ -5,14 +5,16 @@ const clientroute = express.Router();
 const clientController = require('../controller/clientController');
 const { verifyToken } = require('../verifyToken');
 
-clientroute.post('/create', clientController.createClient);/*
+clientroute.post('/create',verifyToken, clientController.createClient);
 
-clientroute.get('/getallclient', clientController.getAllClients); 
+clientroute.get('/getallclient',verifyToken, clientController.getAllClients); 
 
 clientroute.get('/getclient/:id', clientController.getClientById);
 
 clientroute.patch('/updateclient/:id', clientController.updateClient);
 
-clientroute.delete('/deleteclient/:id', clientController.deleteClient);*/
+clientroute.delete('/deleteclient/:id', clientController.deleteClient);
+
+clientroute.patch('/assignServicesToClient', clientController.assignServicesToClient);
 
 module.exports = clientroute;

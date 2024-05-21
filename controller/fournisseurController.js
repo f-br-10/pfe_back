@@ -36,8 +36,16 @@ async function getFournisseurById(req, res) {
 // Récupérer tous les fournisseurs
 async function getAllFournisseurs(req, res) {
   try {
-    const fournisseurs = await Fournisseur.find();
-    return res.json(fournisseurs);
+    const user = req.user;
+    const userFinded = await User.findById(user._id);
+    if(!userFinded) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    if(userFinded.isAdmin) {
+      const fournisseurs = await Fournisseur.find().populate("services");
+      return res.json(fournisseurs);
+    } else {
+      const fournisseurs = await Fournisseur.find({services: { $in: userFinded.services }}).populate("services");
+      return res.json(fournisseurs);
+    }
   } catch (error) {
     console.error('Erreur lors de la récupération des fournisseurs:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération des fournisseurs' });
@@ -45,18 +53,18 @@ async function getAllFournisseurs(req, res) {
 }
 
 // Mettre à jour un fournisseur
-async function updateFournisseur(req, res) {
-  try {
-    const updatedFournisseur = await Fournisseur.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedFournisseur) {
-      return res.status(404).json({ message: 'Fournisseur non trouvé' });
-    }
-    return res.json(updatedFournisseur);
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour du fournisseur:', error);
-    res.status(500).json({ message: 'Erreur lors de la mise à jour du fournisseur' });
-  }
-}
+// async function updateFournisseur(req, res) {
+//   try {
+//     const updatedFournisseur = await Fournisseur.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//     if (!updatedFournisseur) {
+//       return res.status(404).json({ message: 'Fournisseur non trouvé' });
+//     }
+//     return res.json(updatedFournisseur);
+//   } catch (error) {
+//     console.error('Erreur lors de la mise à jour du fournisseur:', error);
+//     res.status(500).json({ message: 'Erreur lors de la mise à jour du fournisseur' });
+//   }
+// }
 
 // Supprimer un fournisseur
 async function deleteFournisseur(req, res) {
@@ -75,7 +83,6 @@ async function deleteFournisseur(req, res) {
 async function assignServicesToFournisseur (req, res)  {
     try {
         const { fournisseurId, serviceIds } = req.body;
-
         // Vérifier si le fournisseur existe
         const fournisseur = await Fournisseur.findById(fournisseurId);
         if (!fournisseur) {
@@ -104,7 +111,6 @@ module.exports = {
   createFournisseur,
   getFournisseurById,
   getAllFournisseurs,
-  updateFournisseur,
   deleteFournisseur,
   assignServicesToFournisseur
 };

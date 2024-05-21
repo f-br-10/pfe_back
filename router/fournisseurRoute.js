@@ -1,20 +1,20 @@
 const express = require('express');
 const fournisseur = express.Router();
-const {createFournisseur,getFournisseurById, getAllFournisseurs,updateFournisseur,deleteFournisseur,assignServicesToFournisseur} = require('../controller/fournisseurController');
-const { verifyTokenAndAdmin } = require('../verifyToken.js');
+const {createFournisseur,getFournisseurById, getAllFournisseurs,deleteFournisseur,assignServicesToFournisseur} = require('../controller/fournisseurController');
+const { verifyToken } = require('../verifyToken.js');
 
 
-fournisseur.post('/create', verifyTokenAndAdmin, createFournisseur);
+fournisseur.post('/create', verifyToken, createFournisseur);
 
-fournisseur.get('/:id', verifyTokenAndAdmin, getFournisseurById);
+fournisseur.get('/:id', verifyToken, getFournisseurById);
 
-fournisseur.get('/', verifyTokenAndAdmin, getAllFournisseurs);
+fournisseur.get('/', verifyToken, getAllFournisseurs);
 
-fournisseur.patch('/:id', verifyTokenAndAdmin, updateFournisseur);
+// fournisseur.patch('/:id', verifyTokenAndAdmin, updateFournisseur);
 
-fournisseur.delete('/:id', verifyTokenAndAdmin, deleteFournisseur);
+fournisseur.delete('/:id', verifyToken, deleteFournisseur);
 
-fournisseur.patch('/assignServicesToFournisseur', verifyTokenAndAdmin, assignServicesToFournisseur);
+fournisseur.patch('/assignServicesToFournisseur', verifyToken, assignServicesToFournisseur);
 
 
 module.exports = fournisseur;
