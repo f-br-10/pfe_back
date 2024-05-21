@@ -9,6 +9,8 @@ const serviceroute = require ("./router/serviceRoute.js");
 const settingsRoutes = require ("./router/settingsRoutes.js");
 const alerteRoutes = require ("./router/alerteRoutes.js");
 const ovhReclamationRoute = require ("./router/ovhReclamationRoute.js");
+const fournisseurRoute = require ("./router/fournisseurRoute.js");
+const clientRoute = require ("./router/clientRoute.js");
 const serviceController = require('./controller/serviceController'); 
 const {fetchAndStoreReclamations} = require('./controller/ovhReclamationController')
 const { compareServiceExpirationDateWithUserSettings } = require('./controller/alerteController');
@@ -33,6 +35,8 @@ app.use("/api/service", serviceroute);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/alerte", alerteRoutes);
 app.use("/api/reclamation", ovhReclamationRoute);
+app.use("/api/fournisseur", fournisseurRoute);
+app.use("/api/client", clientRoute);
 
 
 
