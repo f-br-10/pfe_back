@@ -37,7 +37,7 @@ exports.updatePassword = async (req, res) => {
 
         const originalPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
 
-        originalPassword !== req.body.oldPassword && res.status(401).json('The old password is not correct!');
+        if(originalPassword !== req.body.oldPasswor) return res.status(401).json('The old password is not correct!');
 
         if (req.body.newPassword === req.body.repeatNewPassword) {
 
