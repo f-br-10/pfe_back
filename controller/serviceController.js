@@ -1,8 +1,10 @@
 // serviceController.js
+const mongoose = require("mongoose");
 const exampleResponse = require('../exempleResponse.js');
 const Service = require('../model/ServiceModel');
 const User = require('../model/userModel.js');
 const ovh = require('../ovhinit.js');
+const Fournisseur = require('../model/FournisseurModel.js');
 
 async function fetchAndStoreServices() {
   try {
@@ -116,21 +118,33 @@ async function deleteService(req, res) {
 }
 
 
-function calculateRemainingTime(req, res) {
+
+async function updateServiceStatus() {
   try {
-    const expirationDate = new Date(exampleResponse.exampleResponse.expirationDate);
-    const currentTime = new Date();
-    const remainingTimeMs = expirationDate - currentTime;
+    // Récupérer tous les services
+    const services = await Service.find();
 
-    const days = Math.floor(remainingTimeMs / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((remainingTimeMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((remainingTimeMs % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((remainingTimeMs % (1000 * 60)) / 1000);
+    // Parcourir chaque service pour mettre à jour son statut
+    for (const service of services) {
+      const expirationDate = new Date(service.date_fin);
+      const currentTime = new Date();
+      const remainingTimeMs = expirationDate - currentTime;
 
-    res.json({ days, hours, minutes, seconds });
+      let status;
+      if (remainingTimeMs > 0) {
+        status = 'actif';
+      } else {
+        status = 'expiré';
+      }
+
+      // Mettre à jour le statut uniquement si cela a changé
+      if (service.statut !== status) {
+        service.statut = status;
+        await service.save();
+      }
+    }
   } catch (error) {
-    console.error('Erreur lors du calcul de la durée restante jusqu\'à l\'expiration:', error);
-    res.status(500).json({ message: 'Erreur lors du calcul de la durée restante jusqu\'à l\'expiration' });
+    console.error('Erreur lors de la mise à jour du statut des services:', error);
   }
 }
 
@@ -170,14 +184,30 @@ async function getServiceDistributionByFournisseur   (req, res) {
 async function getServiceExpirationDates  (req, res) {
   try {
       const expirationDates = await Service.find({}, 'nom date_fin').sort('date_fin');
-      res.status(200).json(expirationDates);
+      return res.status(200).json(expirationDates);
   } catch (error) {
       res.status(500).json({ message: 'Erreur lors de la récupération des dates d\'expiration des services', error });
   }
 };
+async function updateServiceReferences() {
+  const fournisseurs = await Fournisseur.find();
+  for (const fournisseur of fournisseurs) {
+      const updatedServices = fournisseur.services.map(service => {
+          if (typeof service === 'string' && mongoose.Types.ObjectId.isValid(service)) {
+              return mongoose.Types.ObjectId(service);
+          } else if (mongoose.Types.ObjectId.isValid(service)) {
+              return service;
+          }
+          console.warn(`Service ID non valide trouvé: ${service}`);
+          return service;
+      });
+      await Fournisseur.updateOne({ _id: fournisseur._id }, { services: updatedServices });
+  }
+  console.log('Mise à jour des références de services terminée.');
+}
 module.exports = {
   createService, getServiceById, getAllServices,
-   updateService, deleteService, calculateRemainingTime,
+   updateService, deleteService, updateServiceStatus,
     fetchAndStoreServices,getServicesWithUser, getServiceStatusCounts,
-     getServiceDistributionByFournisseur, getServiceExpirationDates
+     getServiceDistributionByFournisseur, getServiceExpirationDates, updateServiceReferences
 };

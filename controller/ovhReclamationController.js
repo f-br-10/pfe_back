@@ -7,7 +7,6 @@ async function fetchAndStoreReclamations() {
     // Récupérer la liste des réclamations OVH
     const reclamationsList = await ovh.requestPromised('GET','/support/tickets');
     
-    console.log(reclamationsList);
     // Traiter la réponse de l'API OVH
     for (const ticketId of reclamationsList) {
       try {

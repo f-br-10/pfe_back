@@ -11,7 +11,6 @@ async function createFournisseur(req, res) {
     if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
     
     const newFournisseur = await Fournisseur.create(req.body);
-    // Si nécessaire, associez le fournisseur au user ou faites d'autres opérations.
     return res.status(201).json(newFournisseur);
   } catch (error) {
     console.error('Erreur lors de la création du fournisseur:', error);
@@ -107,10 +106,36 @@ async function assignServicesToFournisseur (req, res)  {
 };
 
 
+
+async function getFournisseursWithServicesCount(req, res) {
+  try {
+      const fournisseurs = await Fournisseur.aggregate([
+          {
+              $lookup: {
+                  from: 'services',
+                  localField: 'services',
+                  foreignField: '_id',
+                  as: 'ournisseurServices'
+              }
+          },
+          {
+              $project: {
+                  nom: 1,
+                  servicesCount: { $size: '$fournisseurServices' }
+              }
+          }
+      ]);
+      res.status(200).json(fournisseurs);
+  } catch (error) {
+      console.error('Erreur lors de la récupération des fournisseurs:', error);
+      res.status(500).json({ message: 'Erreur lors de la récupération des fournisseurs', error });
+  }
+}
 module.exports = {
   createFournisseur,
   getFournisseurById,
   getAllFournisseurs,
   deleteFournisseur,
-  assignServicesToFournisseur
+  assignServicesToFournisseur,
+  getFournisseursWithServicesCount
 };

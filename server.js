@@ -11,8 +11,9 @@ const alerteRoutes = require ("./router/alerteRoutes.js");
 const ovhReclamationRoute = require ("./router/ovhReclamationRoute.js");
 const fournisseurRoute = require ("./router/fournisseurRoute.js");
 const clientRoute = require ("./router/clientRoute.js");
-const serviceController = require('./controller/serviceController'); 
+const {fetchAndStoreServices,updateServiceStatus} = require('./controller/serviceController'); 
 const {fetchAndStoreReclamations} = require('./controller/ovhReclamationController')
+const {updateServiceReferences} = require('./controller/serviceController.js')
 const { compareServiceExpirationDateWithUserSettings } = require('./controller/alerteController');
 const path = require("path");
 
@@ -46,8 +47,10 @@ mongoose
   .connect(process.env.MONGODB_URI)
   .then(async() => {
     console.log("Connected to DB!");
-    serviceController.fetchAndStoreServices();
+    await fetchAndStoreServices();
     await fetchAndStoreReclamations();
+    //await updateServiceReferences();
+    await updateServiceStatus();
   })
   .catch((error) => {
     console.log(error.message);
@@ -55,5 +58,8 @@ mongoose
 
   cron.schedule('0 0 * * *', () => {
     // Fonction à exécuter tous les jours à minuit
-    compareServiceExpirationDateWithUserSettings();
+    fetchAndStoreServices()
+    fetchAndStoreReclamations()
+    updateServiceStatus()
+    compareServiceExpirationDateWithUserSettings()
   });

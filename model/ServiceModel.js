@@ -5,8 +5,7 @@ const serviceSchema = new mongoose.Schema({
     nom: { type: String, required: true },
     date_debut: { type: Date, required: true },
     date_fin: { type: Date, required: true },
-    statut: { type: String, required: true },
-    fournisseur: { type: String, required: true ,  default: "ovh" },
+    statut: { type: String, required: false },
 });
 
 const Service = mongoose.model('Service', serviceSchema);

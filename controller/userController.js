@@ -159,7 +159,7 @@ exports.assignServicesToUser = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
-// controllers/userController.js
+
 // Diagramme à barres pour montrer le nombre de services par utilisateur.
 exports.getUsersWithServicesCount = async (req, res) => {
     try {
@@ -180,7 +180,7 @@ exports.getUsersWithServicesCount = async (req, res) => {
                 }
             }
         ]);
-        res.status(200).json(users);
+        return res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs', error });
     }

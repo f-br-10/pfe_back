@@ -30,7 +30,7 @@ UserRoutes.get('/countUsers', countUsers);
 //assignServicesToUser
 UserRoutes.patch('/assignServicesToUser',verifyTokenAndAdmin, assignServicesToUser);
 
-// get Users With Services Count
+// pour les diagrammes
 UserRoutes.get('/getUsersWithServicesCount', getUsersWithServicesCount);
 
 module.exports =  UserRoutes;

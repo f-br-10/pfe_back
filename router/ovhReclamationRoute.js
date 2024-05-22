@@ -24,6 +24,7 @@ reclamation.post('/:ticketId/close', closeOvhReclamation);
 // Route pour obtenir toutes les réclamations BD
 reclamation.get('/getall', getAllReclamations);
 
+//pour les diagrammes 
 reclamation.get('/category-counts', getReclamationCountsByCategory);
 
 module.exports = reclamation;
