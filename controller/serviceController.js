@@ -132,9 +132,9 @@ async function updateServiceStatus() {
 
       let status;
       if (remainingTimeMs > 0) {
-        status = 'actif';
+        status = 'Active';
       } else {
-        status = 'expiré';
+        status = 'Expired';
       }
 
       // Mettre à jour le statut uniquement si cela a changé
