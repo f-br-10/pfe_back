@@ -17,5 +17,12 @@ serviceroute.get('/getservice/:id', serviceController.getServiceById);
 serviceroute.patch('/updateservice/:id', serviceController.updateService);
 
 serviceroute.delete('/deleteservices/:id', serviceController.deleteService);
+ 
+//pour les diagrammes 
+serviceroute.get('/Status-Counts', serviceController.getServiceStatusCounts);
+
+serviceroute.get('/fournisseur-distribution', serviceController.getServiceDistributionByFournisseur);
+
+serviceroute.get('/expiration-dates', serviceController.getServiceExpirationDates);
 
 module.exports = serviceroute;

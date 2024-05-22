@@ -1,5 +1,5 @@
 const express = require('express');
-const { countUsers, deleteAccount,getProfile, getAllUsers, updatePassword, updateUser , assignServicesToUser,updateUserRole } = require('../controller/userController.js');
+const { countUsers, deleteAccount,getProfile, getAllUsers, updatePassword, updateUser , assignServicesToUser,updateUserRole, getUsersWithServicesCount } = require('../controller/userController.js');
 const { verifyToken , verifyTokenAndAdmin} = require('../verifyToken.js');
 const { upload } = require('../utils/multer.js');
 
@@ -29,5 +29,8 @@ UserRoutes.get('/countUsers', countUsers);
 
 //assignServicesToUser
 UserRoutes.patch('/assignServicesToUser',verifyTokenAndAdmin, assignServicesToUser);
+
+// get Users With Services Count
+UserRoutes.get('/getUsersWithServicesCount', getUsersWithServicesCount);
 
 module.exports =  UserRoutes;

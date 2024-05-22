@@ -144,6 +144,24 @@ async function getReclamationById(req, res) {
     res.status(500).send('Erreur lors de la récupération de la réclamation: ' + error.message);
   }
 }
+
+async function getReclamationCountsByCategory  (req, res) {
+  try {
+      const categoryCounts = await Reclamation.aggregate([
+          {
+              $group: {
+                  _id: "$category",
+                  count: { $sum: 1 }
+              }
+          }
+      ]);
+      res.status(200).json(categoryCounts);
+  } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de la récupération des réclamations par catégorie', error });
+  }
+};
+
+
 module.exports = {
   fetchAndStoreReclamations,
   createOvhReclamation,
@@ -151,5 +169,6 @@ module.exports = {
   closeOvhReclamation, 
   getAllReclamations, 
   getReclamationById, 
-  deleteOvhReclamation
+  deleteOvhReclamation,
+  getReclamationCountsByCategory
 };

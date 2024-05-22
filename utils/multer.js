@@ -7,7 +7,7 @@ const storage = multer.diskStorage({
   // Set the destination for the uploaded file
   /**
    * Sets the destination folder for the uploaded file.
-   * @author Aziz guennichi
+   * @author f-br-10
    * @param {Object} req - The request object.
    * @param {Object} file - The uploaded file object.
    * @param {function} cb - The callback function.
@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
   },
   /**
    * Generates a unique filename for a given file based on its original name and the current time.
-   * @author Aziz guennichi
+   * @author f-br-10
    * @param {Object} req - The request object.
    * @param {Object} file - The file object.
    * @param {function} cb - The callback function.
@@ -39,7 +39,7 @@ const storage = multer.diskStorage({
 });
 /**
  * Filters the uploaded file to only accept image and video types
- * @author Aziz guennichi
+ * @author f-br-10
  * @param {Object} req - The request object
  * @param {Object} file - The uploaded file object
  * @param {function} cb - The callback function

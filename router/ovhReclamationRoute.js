@@ -8,7 +8,8 @@ const {
   updateOvhReclamation,
   closeOvhReclamation, 
   getAllReclamations,
-  deleteOvhReclamation
+  deleteOvhReclamation,
+  getReclamationCountsByCategory
 } = require('../controller/ovhReclamationController');
 
 
@@ -22,5 +23,7 @@ reclamation.post('/update/:ticketId', updateOvhReclamation);
 reclamation.post('/:ticketId/close', closeOvhReclamation);
 // Route pour obtenir toutes les réclamations BD
 reclamation.get('/getall', getAllReclamations);
+
+reclamation.get('/category-counts', getReclamationCountsByCategory);
 
 module.exports = reclamation;

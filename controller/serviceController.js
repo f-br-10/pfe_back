@@ -134,6 +134,50 @@ function calculateRemainingTime(req, res) {
   }
 }
 
+
+async function getServiceStatusCounts   (req, res)  {
+    try {
+        const statusCounts = await Service.aggregate([
+            {
+                $group: {
+                    _id: "$statut",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+        res.status(200).json(statusCounts);
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de la récupération des statistiques de service', error });
+    }
+};
+
+async function getServiceDistributionByFournisseur   (req, res) {
+  try {
+      const fournisseurCounts = await Service.aggregate([
+          {
+              $group: {
+                  _id: "$fournisseur",
+                  count: { $sum: 1 }
+              }
+          }
+      ]);
+      res.status(200).json(fournisseurCounts);
+  } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de la récupération des statistiques par fournisseur', error });
+  }
+};
+
+async function getServiceExpirationDates  (req, res) {
+  try {
+      const expirationDates = await Service.find({}, 'nom date_fin').sort('date_fin');
+      res.status(200).json(expirationDates);
+  } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de la récupération des dates d\'expiration des services', error });
+  }
+};
 module.exports = {
-  createService, getServiceById, getAllServices, updateService, deleteService, calculateRemainingTime, fetchAndStoreServices,getServicesWithUser
+  createService, getServiceById, getAllServices,
+   updateService, deleteService, calculateRemainingTime,
+    fetchAndStoreServices,getServicesWithUser, getServiceStatusCounts,
+     getServiceDistributionByFournisseur, getServiceExpirationDates
 };

@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 
 /**
- * @author Med Aziz Guennichi
+ * @author f-br-10
  * @param {string} userId - The ID of the user to reset password for
  * Creates a password reset link and emails it to the user.
  * Looks up the user by ID, generates a JWT token with the user's ID and email,
@@ -54,7 +54,7 @@ exports.createChangePasswordLink = async (userId) => {
 
 };
 /**
- * @author Med Aziz Guennichi
+ * @author f-br-10
  * Generates a JWT token for activating a user account. 
  * Signs a token with the user's email and ID, 
  * using the JWT_ACCESS_KEY secret.
