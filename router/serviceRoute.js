@@ -10,9 +10,10 @@ serviceroute.post('/create',verifyToken, serviceController.createService);
 //import-ovh-services
 serviceroute.get('/import-ovh-services', async (req, res) => {
     try {
-      await fetchAndStoreOvhServices();
+      await serviceController.fetchAndStoreOvhServices();
       res.status(200).json({ message: 'Services OVH importés avec succès' });
     } catch (error) {
+      console.log(error);
       res.status(500).json({ message: 'Erreur lors de l\'importation des services OVH', error });
     }
   });

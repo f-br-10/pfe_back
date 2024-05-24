@@ -51,19 +51,16 @@ async function getAllFournisseurs(req, res) {
   }
 }
 
-// Mettre à jour un fournisseur
-// async function updateFournisseur(req, res) {
-//   try {
-//     const updatedFournisseur = await Fournisseur.findByIdAndUpdate(req.params.id, req.body, { new: true });
-//     if (!updatedFournisseur) {
-//       return res.status(404).json({ message: 'Fournisseur non trouvé' });
-//     }
-//     return res.json(updatedFournisseur);
-//   } catch (error) {
-//     console.error('Erreur lors de la mise à jour du fournisseur:', error);
-//     res.status(500).json({ message: 'Erreur lors de la mise à jour du fournisseur' });
-//   }
-// }
+async function updatedFournisseur(req,res) {
+  try {
+    const fornisseur = await Fournisseur.findByIdAndUpdate(req.params.id,{ $set: req.body },{ new: true });
+    if(!fornisseur) return res.status(404).json({ message: 'Fournisseur non trouvé' });
+    return res.json(fornisseur);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Erreur lors de la mise à jour du fournisseur' });
+  }
+}
 
 // Supprimer un fournisseur
 async function deleteFournisseur(req, res) {
@@ -137,5 +134,6 @@ module.exports = {
   getAllFournisseurs,
   deleteFournisseur,
   assignServicesToFournisseur,
-  getFournisseursWithServicesCount
+  getFournisseursWithServicesCount,
+  updatedFournisseur
 };

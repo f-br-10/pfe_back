@@ -1,6 +1,6 @@
 const express = require('express');
 const fournisseur = express.Router();
-const {createFournisseur,getFournisseurById, getAllFournisseurs,deleteFournisseur,assignServicesToFournisseur,getFournisseursWithServicesCount} = require('../controller/fournisseurController');
+const {createFournisseur,getFournisseurById, getAllFournisseurs,deleteFournisseur,assignServicesToFournisseur,getFournisseursWithServicesCount, updatedFournisseur} = require('../controller/fournisseurController');
 const { verifyToken } = require('../verifyToken.js');
 
 
@@ -10,7 +10,7 @@ fournisseur.get('/:id', getFournisseurById);
 
 fournisseur.get('/', verifyToken, getAllFournisseurs);
 
-// fournisseur.patch('/:id', verifyTokenAndAdmin, updateFournisseur);
+fournisseur.patch('/update/:id', updatedFournisseur);
 
 fournisseur.delete('/:id', verifyToken, deleteFournisseur);
 

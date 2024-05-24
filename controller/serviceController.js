@@ -178,7 +178,7 @@ async function getServiceById(req, res) {
   try {
     const services = await Service.find({
       $or: [{ deleted: { $exists: false } }, { deleted: false }]
-    });
+    }).populate('fournisseur');
 
     const formattedServices = services.map(service => ({
       ...service._doc,
@@ -207,7 +207,7 @@ async function getServicesWithUser(req,res) {
 
 async function updateService(req, res) {
   try {
-    const updatedService = await Service.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedService = await Service.findByIdAndUpdate(req.params.id, {$set:req.body}, { new: true });
     if (!updatedService) {
       return res.status(404).json({ message: 'Service non trouvé' });
     }
