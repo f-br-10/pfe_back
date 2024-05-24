@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema({
     num: { type: String, required: true },
     image: { type: String, required: false },
     isAdmin: { type: Boolean, required: false, default: false },
+    isSuperAdmin: { type: Boolean, required: false, default: false },
     services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }] // Référence vers les services associés à l'utilisateur
 }, {
     timestamps: true // for date

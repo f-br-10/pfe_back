@@ -1,4 +1,4 @@
-const express = require('express');
+/*const express = require('express');
 const { verifyToken , verifyTokenAndAdmin} = require('../verifyToken.js');
 
 const reclamation = express.Router();
@@ -28,3 +28,4 @@ reclamation.get('/getall', getAllReclamations);
 reclamation.get('/category-counts', getReclamationCountsByCategory);
 
 module.exports = reclamation;
+*/

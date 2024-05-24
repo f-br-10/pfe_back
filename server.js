@@ -11,7 +11,7 @@ const alerteRoutes = require ("./router/alerteRoutes.js");
 const ovhReclamationRoute = require ("./router/ovhReclamationRoute.js");
 const fournisseurRoute = require ("./router/fournisseurRoute.js");
 const clientRoute = require ("./router/clientRoute.js");
-const {fetchAndStoreServices,updateServiceStatus} = require('./controller/serviceController'); 
+const {fetchAndStoreOvhServices,updateServiceStatus} = require('./controller/serviceController'); 
 const {fetchAndStoreReclamations} = require('./controller/ovhReclamationController')
 const {updateServiceReferences} = require('./controller/serviceController.js')
 const { compareServiceExpirationDateWithUserSettings } = require('./controller/alerteController');
@@ -35,7 +35,7 @@ app.use("/api/user", UserRoutes);
 app.use("/api/service", serviceroute);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/alerte", alerteRoutes);
-app.use("/api/reclamation", ovhReclamationRoute);
+//app.use("/api/reclamation", ovhReclamationRoute);
 app.use("/api/fournisseur", fournisseurRoute);
 app.use("/api/client", clientRoute);
 
@@ -47,10 +47,11 @@ mongoose
   .connect(process.env.MONGODB_URI)
   .then(async() => {
     console.log("Connected to DB!");
-    await fetchAndStoreServices();
-    await fetchAndStoreReclamations();
+    await fetchAndStoreOvhServices();
+    //await fetchAndStoreReclamations();
     //await updateServiceReferences();
     await updateServiceStatus();
+
   })
   .catch((error) => {
     console.log(error.message);
@@ -58,7 +59,7 @@ mongoose
 
   cron.schedule('0 0 * * *', () => {
     // Fonction à exécuter tous les jours à minuit
-    fetchAndStoreServices()
+    fetchAndStoreOvhServices()
     fetchAndStoreReclamations()
     updateServiceStatus()
     compareServiceExpirationDateWithUserSettings()

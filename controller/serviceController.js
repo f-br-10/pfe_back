@@ -3,9 +3,67 @@ const mongoose = require("mongoose");
 const exampleResponse = require('../exempleResponse.js');
 const Service = require('../model/ServiceModel');
 const User = require('../model/userModel.js');
-const ovh = require('../ovhinit.js');
+const { createOvhInstance }  = require('../ovhinit.js');
 const Fournisseur = require('../model/FournisseurModel.js');
 
+
+async function fetchAndStoreOvhServices() {
+  try {
+    const fournisseursOvh = await Fournisseur.find({ nom: 'OVH' });
+    for (const fournisseur of fournisseursOvh) {
+      const ovhInstance = createOvhInstance(
+        fournisseur.ovhApiKey,
+        fournisseur.ovhSecret,
+        fournisseur.ovhConsumerKey
+      );
+
+      // Récupérer la liste des services OVH pour ce fournisseur
+      const response = await ovhInstance.requestPromised('GET', '/service');
+
+      const allServices = await Service.find({ fournisseur: fournisseur._id });
+
+      // Traiter la réponse de l'API OVH
+      for (const serviceId of response) {
+        try {
+          // Récupérer les détails de chaque service
+          const serviceDetails = await ovhInstance.requestPromised('GET', `/services/${serviceId}`);
+
+          const existingService = await Service.findOne({ nom: serviceDetails.resource.name.toLowerCase(), fournisseur: fournisseur._id });
+
+          if (existingService) {
+            existingService.date_debut = new Date(serviceDetails.engagementDate);
+            existingService.date_fin = new Date(serviceDetails.expirationDate);
+            existingService.statut = serviceDetails.state;
+            existingService.statique = false;
+            await existingService.save();
+          } else {
+            const newService = new Service({
+              nom: serviceDetails.resource.name,
+              date_debut: new Date(serviceDetails.engagementDate),
+              date_fin: new Date(serviceDetails.expirationDate),
+              statut: serviceDetails.state,
+              statique: false,
+              fournisseur: fournisseur._id,
+              deleted: false
+            });
+            await newService.save();
+            fournisseur.services.push(newService._id);
+          }
+        } catch (error) {
+          console.error('Erreur lors de la récupération et du stockage des détails du service OVH:', error);
+        }
+      }
+      await fournisseur.save();
+    }
+  } catch (error) {
+    console.error('Erreur lors de la récupération des services OVH:', error);
+  }
+}
+
+
+
+
+/*
 async function fetchAndStoreServices() {
   try {
     // Récupérer la liste des services OVH
@@ -39,8 +97,57 @@ async function fetchAndStoreServices() {
   } catch (error) {
     console.error('Erreur lors de la récupération des services OVH:', error);
   }
+}*/
+
+
+
+async function createService(req, res) {
+  try {
+    const { fournisseurId, ...serviceData } = req.body;
+
+    const fournisseur = await Fournisseur.findById(fournisseurId);
+    if (!fournisseur) {
+      return res.status(404).json({ message: 'Fournisseur non trouvé' });
+    }
+
+    const newService = new Service({
+      ...serviceData,
+      statique: true, 
+      fournisseur: fournisseurId
+    });
+
+    await newService.save();
+
+    fournisseur.services.push(newService._id);
+    await fournisseur.save();
+
+    return res.status(201).json(newService);
+  } catch (error) {
+    console.error('Erreur lors de la création du service:', error);
+    res.status(500).json({ message: 'Erreur lors de la création du service' });
+  }
 }
 
+/*
+async function createService(req, res) {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    
+    const serviceData = {
+      ...req.body,
+      statique: true 
+    };
+
+    const newService = await Service.create(serviceData);
+    user.services.push(newService._id);
+    await user.save();
+    return res.status(201).json(newService);
+  } catch (error) {
+    console.error('Erreur lors de la création du service:', error);
+    res.status(500).json({ message: 'Erreur lors de la création du service' });
+  }
 async function createService(req, res) {
   try {
     const userId = req.user._id;
@@ -54,7 +161,7 @@ async function createService(req, res) {
     console.error('Erreur lors de la création du service:', error);
     res.status(500).json({ message: 'Erreur lors de la création du service' });
   }
-}
+}*/
 
 async function getServiceById(req, res) {
   try {
@@ -67,17 +174,24 @@ async function getServiceById(req, res) {
     console.error('Erreur lors de la récupération du service:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération du service' });
   }
-}
-
-async function getAllServices(req, res) {
+}const getAllServices = async (req, res) => {
   try {
-    const services = await Service.find();
-    return res.json(services);
+    const services = await Service.find({
+      $or: [{ deleted: { $exists: false } }, { deleted: false }]
+    });
+
+    const formattedServices = services.map(service => ({
+      ...service._doc,
+      date_debut: formatDate(service.date_debut),
+      date_fin: formatDate(service.date_fin)
+    }));
+
+    res.status(200).json(formattedServices);
   } catch (error) {
     console.error('Erreur lors de la récupération des services:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération des services' });
   }
-}
+};
 
 async function getServicesWithUser(req,res) {
   try {
@@ -104,6 +218,24 @@ async function updateService(req, res) {
   }
 }
 
+const deleteService = async (req, res) => {
+  try {
+    const serviceId = req.params.id;
+    
+    // Mettre à jour le champ 'deleted' à true
+    const service = await Service.findByIdAndUpdate(serviceId, { deleted: true }, { new: true });
+    
+    if (!service) {
+      return res.status(404).json({ message: 'Service non trouvé' });
+    }
+
+    res.status(200).json({ message: 'Service supprimé (soft delete)' });
+  } catch (error) {
+    console.error('Erreur lors de la suppression du service:', error);
+    res.status(500).json({ message: 'Erreur lors de la suppression du service' });
+  }
+};
+/*
 async function deleteService(req, res) {
   try {
     const deletedService = await Service.findByIdAndDelete(req.params.id);
@@ -116,7 +248,7 @@ async function deleteService(req, res) {
     res.status(500).json({ message: 'Erreur lors de la suppression du service' });
   }
 }
-
+*/
 
 
 async function updateServiceStatus() {
@@ -205,9 +337,63 @@ async function updateServiceReferences() {
   }
   console.log('Mise à jour des références de services terminée.');
 }
+
+async function renewService(req, res) {
+  try {
+      const { serviceId, numberOfMonths } = req.body;
+      const service = await Service.findById(serviceId);
+      if (!service) {
+          return res.status(404).json({ message: 'Service not found' });
+      }
+      
+      const currentDate = new Date();
+      const expirationDate = new Date(service.date_fin);
+      
+      let newExpirationDate;
+      if (numberOfMonths >= 12) {
+          const years = Math.floor(numberOfMonths / 12);
+          const remainingMonths = numberOfMonths % 12;
+          newExpirationDate = addMonthsToDate(expirationDate, remainingMonths);
+          newExpirationDate.setFullYear(newExpirationDate.getFullYear() + years);
+      } else {
+          newExpirationDate = addMonthsToDate(expirationDate, numberOfMonths);
+      }
+      
+      service.date_fin = newExpirationDate;
+      await service.save();
+      
+      return res.status(200).json({ message: 'Service renewed successfully', newExpirationDate });
+  } catch (error) {
+      console.error('Error renewing service:', error);
+      res.status(500).json({ message: 'Error renewing service' });
+  }
+}
+
+
 module.exports = {
   createService, getServiceById, getAllServices,
    updateService, deleteService, updateServiceStatus,
-    fetchAndStoreServices,getServicesWithUser, getServiceStatusCounts,
-     getServiceDistributionByFournisseur, getServiceExpirationDates, updateServiceReferences
+    fetchAndStoreOvhServices,getServicesWithUser, getServiceStatusCounts,
+     getServiceDistributionByFournisseur, getServiceExpirationDates, updateServiceReferences,
+     renewService
 };
+
+
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+}
+
+
+function addMonthsToDate(date, months) {
+  const newDate = new Date(date);
+  const currentMonth = newDate.getMonth();
+  const newMonth = currentMonth + months;
+  newDate.setMonth(newMonth);
+  return newDate;
+}

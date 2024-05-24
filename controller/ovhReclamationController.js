@@ -1,4 +1,4 @@
-const ovh = require('../ovhinit.js');
+/*const ovh = require('../ovhinit.js');
 const Reclamation = require ('../model/ReclamationModel');
 
 
@@ -171,3 +171,5 @@ module.exports = {
   deleteOvhReclamation,
   getReclamationCountsByCategory
 };
+
+*/

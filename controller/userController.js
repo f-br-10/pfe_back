@@ -26,6 +26,26 @@ exports.updateUser = async (req, res) => {
   }
 }
 
+exports.updateUserRole = async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      if (user.isSuperAdmin) {
+        return res.status(403).json({ message: "Cannot change role of super admin" });
+      }
+  
+      user.isAdmin = req.body.isAdmin;
+      await user.save();
+      return res.status(200).json(user);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  };
+/*
 exports.updateUserRole = async(req,res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -41,7 +61,7 @@ exports.updateUserRole = async(req,res) => {
   }
 
 }
-
+*/
 //Controller for update Password
 exports.updatePassword = async (req, res) => {
     try {
@@ -73,12 +93,22 @@ exports.updatePassword = async (req, res) => {
 //Controller for delete Account or User
 exports.deleteAccount = async (req, res) => {
     try {
-        await User.findByIdAndDelete(req.params.id);
-        return res.status(200).json("User has been deleted...");
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      // Vérifier si l'utilisateur est un super administrateur
+      if (user.isSuperAdmin) {
+        return res.status(403).json({ message: "Cannot delete super admin" });
+      }
+  
+      await User.findByIdAndDelete(req.params.id);
+      return res.status(200).json("User has been deleted...");
     } catch (error) {
-        res.status(500).json(error);
+      res.status(500).json(error);
     }
-}
+  };
 
 //Controller for update User image
 exports.updateImage = async (req, res) => {
