@@ -68,6 +68,11 @@ async function createService(req, res) {
       return res.status(404).json({ message: 'Fournisseur non trouvé' });
     }
 
+    // Vérifier si un service avec le même nom et les mêmes dates existe déjà pour ce fournisseur
+    const existingService = await Service.findOne({ fournisseur: fournisseurId, nom: nom, date_debut: date_debut, date_fin: date_fin });
+    if (existingService) {
+      return res.status(409).json({ message: 'Service existe déjà pour ce fournisseur avec les mêmes dates' });
+    }
     const newService = new Service({
       ...serviceData,
       statique: true, 
@@ -161,8 +166,8 @@ const deleteService = async (req, res) => {
 
 async function updateServiceStatus() {
   try {
-    // Récupérer tous les services
-    const services = await Service.find();
+    // Récupérer tous les services  statique
+    const services = await Service.find({ statique: true });
 
     // Parcourir chaque service pour mettre à jour son statut
     for (const service of services) {
@@ -187,7 +192,6 @@ async function updateServiceStatus() {
     console.error('Erreur lors de la mise à jour du statut des services:', error);
   }
 }
-
 
 async function getServiceStatusCounts   (req, res)  {
     try {

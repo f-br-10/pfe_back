@@ -1,19 +1,48 @@
 const Fournisseur = require('../model/FournisseurModel.js'); 
 const User = require('../model/UserModel.js');
 const Service = require('../model/ServiceModel.js');
+
+
 // Créer un nouveau fournisseur
 async function createFournisseur(req, res) {
   try {
     const userId = req.user._id;
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
-    const newFournisseur = await Fournisseur.create(req.body);
+
+    const { nom, adresse, telephone, email } = req.body;
+
+    // Vérifier si un fournisseur avec le même nom et la même adresse existe déjà
+    const existingFournisseur = await Fournisseur.findOne({ nom, adresse });
+    if (existingFournisseur) {
+      return res.status(409).json({ message: 'Fournisseur existe déjà' });
+    }
+
+    // Créer un objet fournisseur avec les champs de base
+    const fournisseurData = {
+      nom,
+      adresse,
+      telephone,
+      email,
+    };
+
+    // Ajouter les clés OVH uniquement si le nom du fournisseur inclut "OVH"
+    if (nom.toLowerCase().includes('ovh')) {
+      fournisseurData.ovhApiKey = req.body.ovhApiKey;
+      fournisseurData.ovhSecret = req.body.ovhSecret;
+      fournisseurData.ovhConsumerKey = req.body.ovhConsumerKey;
+    }
+
+    const newFournisseur = new Fournisseur(fournisseurData);
+    await newFournisseur.save();
+    
     return res.status(201).json(newFournisseur);
   } catch (error) {
     console.error('Erreur lors de la création du fournisseur:', error);
     res.status(500).json({ message: 'Erreur lors de la création du fournisseur' });
   }
 }
+
 // Récupérer un fournisseur par son ID
 async function getFournisseurById(req, res) {
   try {
