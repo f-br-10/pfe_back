@@ -1,5 +1,5 @@
 //userController.js
-const User = require("../model/userModel.js");
+const User = require("../model/UserModel.js");
 const Service = require('../model/ServiceModel');
 const CryptoJS = require('crypto-js');
 

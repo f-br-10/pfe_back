@@ -11,10 +11,13 @@ const alerteRoutes = require ("./router/alerteRoutes.js");
 const ReclamationRoute = require ("./router/ReclamationRoute.js");
 const fournisseurRoute = require ("./router/fournisseurRoute.js");
 const clientRoute = require ("./router/clientRoute.js");
+const factureRoute = require ("./router/factureRoute.js");
+
 const {fetchAndStoreOvhServices,updateServiceStatus} = require('./controller/serviceController'); 
 const {fetchAndStoreReclamations} = require('./controller/ovhReclamationController');
 const {updateServiceReferences} = require('./controller/serviceController.js');
 const {checkAndCreateAlerts} = require('./controller/alerteController.js');
+const {fetchAndStoreOvhBills} = require('./controller/factureController.js');
 
 const path = require("path");
 
@@ -40,6 +43,8 @@ app.use("/api/alerte", alerteRoutes);
 app.use("/api/reclamation", ReclamationRoute);
 app.use("/api/fournisseur", fournisseurRoute);
 app.use("/api/client", clientRoute);
+app.use("/api/facture", factureRoute);
+
 
 
 
@@ -50,9 +55,11 @@ mongoose
     console.log("Connected to DB!");
     await fetchAndStoreOvhServices();
     await fetchAndStoreReclamations();
-    //await fetchAndStoreReclamations();
-    //await updateServiceReferences();
+    await fetchAndStoreOvhBills();
+    await  checkAndCreateAlerts(); 
+
     await updateServiceStatus();
+
 
   })
   .catch((error) => {
@@ -65,5 +72,6 @@ mongoose
     fetchAndStoreReclamations()
     updateServiceStatus()
     checkAndCreateAlerts()
+    fetchAndStoreOvhBills()
 
   });

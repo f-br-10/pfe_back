@@ -7,20 +7,20 @@ async function checkAndCreateAlerts() {
   try {
     // Récupérer tous les utilisateurs
     const users = await User.find().populate('services').exec();
-    console.log('Nombre d\'utilisateurs trouvés:', users.length);
+    //console.log('Nombre d\'utilisateurs trouvés:', users.length);
 
     // Parcourir chaque utilisateur
     for (const user of users) {
-      console.log('Vérification des alertes pour l\'utilisateur:', user.nom);
+      //console.log('Vérification des alertes pour l\'utilisateur:', user.nom);
 
       // Récupérer les paramètres de notification de l'utilisateur
       const settings = await Settings.findOne({ userId: user._id }).exec();
       let globalNotificationDays = settings ? settings.globalNotificationDays : 10;
-      console.log('Paramètres de notification globale pour l\'utilisateur', user.nom, ':', globalNotificationDays);
+      //console.log('Paramètres de notification globale pour l\'utilisateur', user.nom, ':', globalNotificationDays);
 
       // Parcourir chaque service de l'utilisateur
       for (const service of user.services) {
-        console.log('Vérification du service:', service.nom);
+        //console.log('Vérification du service:', service.nom);
 
         let notificationDays = globalNotificationDays;
 
@@ -31,7 +31,7 @@ async function checkAndCreateAlerts() {
             notificationDays = customSetting.notificationDays;
           }
         }
-        console.log('Jours de notification pour le service', service.nom, ':', notificationDays);
+       // console.log('Jours de notification pour le service', service.nom, ':', notificationDays);
 
         // Calculer le temps restant jusqu'à la date d'expiration du service
         const currentTime = new Date();
@@ -49,7 +49,7 @@ async function checkAndCreateAlerts() {
           });
 
           await newAlert.save();
-          console.log('Alerte enregistrée:', newAlert);
+          //console.log('Alerte enregistrée:', newAlert);
         } else {
           console.log(`Pas d'alerte à créer pour le service ${service.nom}. Jours restants: ${daysDiff}`);
         }

@@ -1,27 +1,24 @@
-/* const mongoose = require ("mongoose");
+const mongoose = require ("mongoose");
 
 //Create table for factureSchema
 const factureSchema = new mongoose.Schema({
-    billId: { type: String, required: true },
-    category: { type: String, required: true },
-    date: { type: String, required: true },
-    orderId: { type: String, required: true },
-    password: { type: String, required: true },
-    pdfUrl: { type: String, required: true },
-    priceWithTax:{ { type: String, required: true },
-    currencyCode  { type: String, required: true },
-    priceInUcents { type: String, required: true },
-    text { type: String, required: true },
-    value { type: String, required: true }},
-    email: { type: String, required: true },
-    email: { type: String, required: true },
-    email: { type: String, required: true },
-    email: { type: String, required: true },
-    email: { type: String, required: true },
-    email: { type: String, required: true },
-    services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }] 
+    billId: { type: String },
+    orderId: { type: String },
+    date: { type: Date},
+    orderId: { type: Number },
+    password: { type: String },
+    pdfUrl: { type: String },
+    priceWithoutTax: { type: Number },
+    priceWithTax: { type: Number },
+    fournisseur: { type: mongoose.Schema.Types.ObjectId, ref: 'Fournisseur', required: true },
+    deleted: { type: Boolean, default: false } 
 
-}, );
+});
+
+
+const Facture = mongoose.model('Facture', factureSchema);
+
+module.exports = Facture;
 /*{
   "billId": "string",
   "category": "autorenew",
@@ -48,9 +45,4 @@ const factureSchema = new mongoose.Schema({
     "value": 0
   },
   "url": "string"
-}*//*
-const facture = mongoose.model('facture', factureSchema);
-module.exports = facture;
-
-
-*/
+}*/
