@@ -11,6 +11,7 @@ const reclamationSchema = new mongoose.Schema({
   score: { type: String },
   serviceName: { type: String },
   state: { type: String, enum: ['closed', 'open', 'unknown'] },
+  subcategory: { type: String, enum: ['alerts' , 'autorenew' , 'bill' , 'down' , 'inProgress' , 'new' , 'other' , 'perfs' , 'start' , 'usage'] },
   subject: { type: String },
   ticketId: { type: Number },
   ticketNumber: { type: Number },
