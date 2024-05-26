@@ -161,11 +161,15 @@ exports.countUsers = async (req, res) => {
         return res.status(500).json(error);
     }
 }
-
 // Fonction pour attribuer des services disponibles à un utilisateur
 exports.assignServicesToUser = async (req, res) => {
     try {
         const { userId, serviceIds } = req.body;
+
+        // Vérifier si les identifiants sont valides
+        if (!userId || !Array.isArray(serviceIds)) {
+            return res.status(400).json({ message: 'Invalid input data' });
+        }
 
         // Vérifier si l'utilisateur existe
         const user = await User.findById(userId);
@@ -189,7 +193,6 @@ exports.assignServicesToUser = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
-
 // Diagramme à barres pour montrer le nombre de services par utilisateur.
 exports.getUsersWithServicesCount = async (req, res) => {
     try {

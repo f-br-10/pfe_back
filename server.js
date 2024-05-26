@@ -8,14 +8,16 @@ const UserRoutes = require ("./router/userRoutes.js");
 const serviceroute = require ("./router/serviceRoute.js");
 const settingsRoutes = require ("./router/settingsRoutes.js");
 const alerteRoutes = require ("./router/alerteRoutes.js");
-const ovhReclamationRoute = require ("./router/ovhReclamationRoute.js");
+const ReclamationRoute = require ("./router/ReclamationRoute.js");
 const fournisseurRoute = require ("./router/fournisseurRoute.js");
 const clientRoute = require ("./router/clientRoute.js");
 const {fetchAndStoreOvhServices,updateServiceStatus} = require('./controller/serviceController'); 
-const {fetchAndStoreReclamations} = require('./controller/ovhReclamationController')
-const {updateServiceReferences} = require('./controller/serviceController.js')
-const { compareServiceExpirationDateWithUserSettings } = require('./controller/alerteController');
+const {fetchAndStoreReclamations} = require('./controller/ovhReclamationController');
+const {updateServiceReferences} = require('./controller/serviceController.js');
+const {checkAndCreateAlerts} = require('./controller/alerteController.js');
+
 const path = require("path");
+
 
 const app = express();
 app.use(express.json());
@@ -35,10 +37,9 @@ app.use("/api/user", UserRoutes);
 app.use("/api/service", serviceroute);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/alerte", alerteRoutes);
-//app.use("/api/reclamation", ovhReclamationRoute);
+app.use("/api/reclamation", ReclamationRoute);
 app.use("/api/fournisseur", fournisseurRoute);
 app.use("/api/client", clientRoute);
-
 
 
 
@@ -48,6 +49,7 @@ mongoose
   .then(async() => {
     console.log("Connected to DB!");
     await fetchAndStoreOvhServices();
+    await fetchAndStoreReclamations();
     //await fetchAndStoreReclamations();
     //await updateServiceReferences();
     await updateServiceStatus();
@@ -62,5 +64,6 @@ mongoose
     fetchAndStoreOvhServices()
     fetchAndStoreReclamations()
     updateServiceStatus()
-    compareServiceExpirationDateWithUserSettings()
+    checkAndCreateAlerts()
+
   });

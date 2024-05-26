@@ -9,6 +9,8 @@ const settingsSchema = new mongoose.Schema({
     notificationDays: { type: Number, default: 10 } // Nombre de jours avant l'expiration pour ce service spécifique
     }]
 });
-
+module.exports = mongoose.models.Settings || mongoose.model('Settings', settingsSchema);
+/*
 const Settings = mongoose.model('Settings', settingsSchema);
 module.exports = Settings;
+*/

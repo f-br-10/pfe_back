@@ -1,24 +1,25 @@
-const mongoose = require ("mongoose");
+const mongoose = require('mongoose');
 
-//Create table for reclamation
+// Créez le schéma de réclamation
 const reclamationSchema = new mongoose.Schema({
-    accountId:{type: String},
-    canBeClosed: { type: Boolean,},
-    category: {type: String,enum: ['assistance', 'billing', 'incident']},
-    creationDate:  { type: Date, },
-    lastMessageFrom:{type: String,enum: ['customer', 'support', 'incident']},
-    product:{type: String,enum: ['adsl', 'cdn', 'dedicated' , 'dedicated-billing' , 'dedicated-other', 'dedicatedcloud', 'domain' , 'exchange' , 'fax' , 'hosting' ,'housing' , 'iaas' , 'mail' , 'network' , 'publiccloud' , 'sms' , 'ssl' , 'storage' , 'telecom-billing' , 'telecom-other' , 'vac', 'voip','vps','web','billing','web','other' ]},
-    score: {type: String},
-    serviceName: {type: String},
-    state: {type: String,enum: ['closed', 'open', 'unknown']},
-    subject: {type: String},
-    ticketId:{ type: Number, },
-    ticketNumber: { type: Number, },
-    type:{type: String,enum: ['criticalIntervention', 'genericRequest']},
-    updateDate :  { type: Date, },
-    
-}, );
+  accountId: { type: String },
+  canBeClosed: { type: Boolean },
+  category: { type: String, enum: ['assistance', 'billing', 'incident'] },
+  creationDate: { type: Date },
+  lastMessageFrom: { type: String, enum: ['customer', 'support', 'incident'] },
+  product: { type: String, enum: ['adsl', 'cdn', 'dedicated', 'dedicated-billing', 'dedicated-other', 'dedicatedcloud', 'domain', 'exchange', 'fax', 'hosting', 'housing', 'iaas', 'mail', 'network', 'publiccloud', 'sms', 'ssl', 'storage', 'telecom-billing', 'telecom-other', 'vac', 'voip', 'vps', 'web', 'billing', 'web', 'other'] },
+  score: { type: String },
+  serviceName: { type: String },
+  state: { type: String, enum: ['closed', 'open', 'unknown'] },
+  subject: { type: String },
+  ticketId: { type: Number },
+  ticketNumber: { type: Number },
+  type: { type: String, enum: ['criticalIntervention', 'genericRequest'] },
+  updateDate: { type: Date },
+  fournisseur: { type: mongoose.Schema.Types.ObjectId, ref: 'Fournisseur' }, // Référence au fournisseur
+  deleted: { type: Boolean, default: false }, // Champ pour suppression logique
+  body: { type: String } // Ajouté pour les réclamations non-OVH
+});
 
-const reclamation = mongoose.model('reclamation', reclamationSchema);
-module.exports = reclamation;
-
+const Reclamation = mongoose.model('Reclamation', reclamationSchema);
+module.exports = Reclamation;

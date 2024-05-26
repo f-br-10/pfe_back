@@ -1,23 +1,23 @@
-/*const express = require('express');
+const express = require('express');
 const { verifyToken , verifyTokenAndAdmin} = require('../verifyToken.js');
 
 const reclamation = express.Router();
 
 const {
-  createOvhReclamation,
+  createReclamation,
   updateOvhReclamation,
   closeOvhReclamation, 
   getAllReclamations,
-  deleteOvhReclamation,
+  deleteReclamation,
   getReclamationCountsByCategory
 } = require('../controller/ovhReclamationController');
 
 
 // Route pour créer une nouvelle réclamation OVH
-reclamation.post('/create', createOvhReclamation);
-reclamation.delete("/delete-reclamation/:id", deleteOvhReclamation);
+reclamation.post('/create', createReclamation);
+reclamation.delete("/:id", deleteReclamation);
 // Route pour mettre à jour une réclamation OVH
-reclamation.post('/update/:ticketId', updateOvhReclamation);
+reclamation.patch('/update/:ticketId', updateOvhReclamation);
 
 // Route pour fermer une réclamation OVH
 reclamation.post('/:ticketId/close', closeOvhReclamation);
@@ -28,4 +28,3 @@ reclamation.get('/getall', getAllReclamations);
 reclamation.get('/category-counts', getReclamationCountsByCategory);
 
 module.exports = reclamation;
-*/

@@ -2,26 +2,22 @@ const Client = require('../model/ClientModel.js');
 const User = require('../model/userModel.js');
 const Service = require('../model/ServiceModel.js');
 
-// Créer un nouveau fournisseur
+// Créer un nouveau client
 async function createClient(req, res) {
   try {
-    const userId = req.user._id;
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
-
     const newClient = await Client.create(req.body);
     return res.status(201).json(newClient);
   } catch (error) {
-    console.error('Erreur lors de la création du Client:', error);
-    res.status(500).json({ message: 'Erreur lors de la création du Client' });
+    console.error('Erreur lors de la création du client:', error);
+    res.status(500).json({ message: 'Erreur lors de la création du client' });
   }
 }
 
-// Récupérer un Client par son ID
+// Récupérer un client par son ID
 async function getClientById(req, res) {
   try {
-    const client = await Client.findById(req.params.id);
-    if (!client) {
+    const client = await Client.findById(req.params.id).populate('services');
+    if (!client || client.deleted) {
       return res.status(404).json({ message: 'Client non trouvé' });
     }
     return res.json(client);
@@ -31,19 +27,20 @@ async function getClientById(req, res) {
   }
 }
 
-// Récupérer tous les client
+// Récupérer tous les clients
 async function getAllClients(req, res) {
   try {
     const user = req.user;
     const userFinded = await User.findById(user._id);
-    if(!userFinded) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    if (!userFinded) return res.status(404).json({ message: 'Utilisateur non trouvé' });
+
+    let clients;
     if (userFinded.isAdmin) {
-      const clients = await Client.find().populate("services");
-      return res.json(clients);
+      clients = await Client.find({ deleted: false }).populate('services');
     } else {
-      const clients = await Client.find({services: { $in: userFinded.services }}).populate("services");
-      return res.json(clients);
+      clients = await Client.find({ services: { $in: userFinded.services }, deleted: false }).populate('services');
     }
+    return res.json(clients);
   } catch (error) {
     console.error('Erreur lors de la récupération des clients:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération des clients' });
@@ -54,58 +51,59 @@ async function getAllClients(req, res) {
 async function updateClient(req, res) {
   try {
     const updatedClient = await Client.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedClient) {
+    if (!updatedClient || updatedClient.deleted) {
       return res.status(404).json({ message: 'Client non trouvé' });
     }
     return res.json(updatedClient);
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du Client:', error);
-    res.status(500).json({ message: 'Erreur lors de la mise à jour du Client' });
+    console.error('Erreur lors de la mise à jour du client:', error);
+    res.status(500).json({ message: 'Erreur lors de la mise à jour du client' });
   }
 }
 
-// Supprimer un fournisseur
+// Supprimer un client (soft delete)
 async function deleteClient(req, res) {
   try {
-    const deletedClient = await Client.findByIdAndDelete(req.params.id);
-    if (!deletedClient) {
+    const client = await Client.findById(req.params.id);
+    if (!client || client.deleted) {
       return res.status(404).json({ message: 'Client non trouvé' });
     }
-    return res.json({ message: 'Client supprimé avec succès' });
+    client.deleted = true;
+    await client.save();
+    return res.json({ message: 'Client supprimé avec succès (soft delete)' });
   } catch (error) {
-    console.error('Erreur lors de la suppression du Client:', error);
-    res.status(500).json({ message: 'Erreur lors de la suppression du Client' });
+    console.error('Erreur lors de la suppression du client:', error);
+    res.status(500).json({ message: 'Erreur lors de la suppression du client' });
   }
 }
 
-
+// Assigner des services à un client
 async function assignServicesToClient(req, res) {
   try {
     const { clientId, serviceIds } = req.body;
 
     // Vérifier si le client existe
     const client = await Client.findById(clientId);
-    if (!client) {
-      return res.status(404).json({ message: 'Client not found' });
+    if (!client || client.deleted) {
+      return res.status(404).json({ message: 'Client non trouvé' });
     }
 
     // Vérifier si les services existent
     const services = await Service.find({ _id: { $in: serviceIds } });
     if (!services || services.length !== serviceIds.length) {
-      return res.status(404).json({ message: 'One or more services not found' });
+      return res.status(404).json({ message: 'Un ou plusieurs services non trouvés' });
     }
 
     // Assigner les services au client
     client.services = serviceIds;
     await client.save();
 
-    return res.status(200).json({ message: 'Services assigned to client successfully' });
+    return res.status(200).json({ message: 'Services assignés au client avec succès' });
   } catch (error) {
-    console.error('Error assigning services to client:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('Erreur lors de l\'assignation des services au client:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
   }
-};
-
+}
 
 module.exports = {
   createClient,
