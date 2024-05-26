@@ -60,14 +60,29 @@ async function checkAndCreateAlerts() {
   }
 }
 
+// Obtenir les alertes par utilisateur
 async function getAlertesByUserId(req, res) {
   try {
     const userId = req.user._id; 
-    const alertes = await Alerte.find({ userId }).populate('serviceId');
+    const alertes = await Alerte.find({ userId, deleted: false }).populate('serviceId');
     let unreadAlertes = alertes.filter(alerte => alerte.statut === 'unread');
     res.status(200).json({ alertes: alertes, unreadAlertes: unreadAlertes });
   } catch (error) {
     res.status(500).send('Erreur lors de la récupération des alertes de l\'utilisateur: ' + error.message);
+  }
+}
+
+// Supprimer une alerte (soft delete)
+async function deleteAlerte(req, res) {
+  try {
+    const { id } = req.params;
+    const updatedAlerte = await Alerte.findByIdAndUpdate(id, { deleted: true }, { new: true });
+    if (!updatedAlerte) {
+      return res.status(404).send('Alerte non trouvée');
+    }
+    res.status(200).json(updatedAlerte);
+  } catch (error) {
+    res.status(500).send('Erreur lors de la suppression de l\'alerte: ' + error.message);
   }
 }
 
@@ -84,5 +99,5 @@ async function markAlerteAsRead(req, res) {
   }
 }
 
-module.exports = { checkAndCreateAlerts,getAlertesByUserId ,markAlerteAsRead};
+module.exports = { checkAndCreateAlerts,getAlertesByUserId ,markAlerteAsRead , deleteAlerte};
 

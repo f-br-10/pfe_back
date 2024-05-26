@@ -8,7 +8,9 @@ const alerteSchema = new mongoose.Schema({
   fournisseurId: {type: mongoose.Schema.Types.ObjectId,ref: 'Fournisseur',required: true},
   message: {type: String,required: true},
   createdAt: {type: Date,default: Date.now},
-  statut: {type: String,enum: ['unread', 'read', 'processed'], default: 'unread'}
+  statut: {type: String,enum: ['unread', 'read', 'processed'], default: 'unread'},
+  deleted: { type: Boolean, default: false } 
+
 });
 
 const Alerte = mongoose.model('Alerte', alerteSchema);

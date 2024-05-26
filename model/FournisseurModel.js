@@ -9,7 +9,7 @@ const fournisseurSchema = new mongoose.Schema({
   ovhSecret: { type: String },
   ovhConsumerKey: { type: String },
   services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
-  deleted: { type: Boolean, default: false } // Ajout du champ deleted
+  deleted: { type: Boolean, default: false } 
 
 });
 

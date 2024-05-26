@@ -12,7 +12,7 @@ const ReclamationRoute = require ("./router/ReclamationRoute.js");
 const fournisseurRoute = require ("./router/fournisseurRoute.js");
 const clientRoute = require ("./router/clientRoute.js");
 const factureRoute = require ("./router/factureRoute.js");
-
+const syncRoute = require ("./router/syncRoute.js");
 const {fetchAndStoreOvhServices,updateServiceStatus} = require('./controller/serviceController'); 
 const {fetchAndStoreReclamations} = require('./controller/ovhReclamationController');
 const {updateServiceReferences} = require('./controller/serviceController.js');
@@ -44,6 +44,7 @@ app.use("/api/reclamation", ReclamationRoute);
 app.use("/api/fournisseur", fournisseurRoute);
 app.use("/api/client", clientRoute);
 app.use("/api/facture", factureRoute);
+app.use("/api/sync", syncRoute);
 
 
 
