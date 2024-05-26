@@ -3,7 +3,6 @@ const mongoose = require ("mongoose");
 //Create table for factureSchema
 const factureSchema = new mongoose.Schema({
     billId: { type: String },
-    orderId: { type: String },
     date: { type: Date},
     orderId: { type: Number },
     password: { type: String },

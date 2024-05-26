@@ -69,7 +69,7 @@ async function createService(req, res) {
     }
 
     // Vérifier si un service avec le même nom et les mêmes dates existe déjà pour ce fournisseur
-    const existingService = await Service.findOne({ fournisseur: fournisseurId, nom: nom, date_debut: date_debut, date_fin: date_fin });
+    const existingService = await Service.findOne({ fournisseur: fournisseurId, nom: serviceData.nom, date_debut: serviceData.date_debut, date_fin: serviceData.date_fin });
     if (existingService) {
       return res.status(409).json({ message: 'Service existe déjà pour ce fournisseur avec les mêmes dates' });
     }
