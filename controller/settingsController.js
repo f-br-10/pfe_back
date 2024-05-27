@@ -14,6 +14,42 @@ exports.getUserSettings = async (req, res) => {
   }
 }
 
+// Controller pour mettre à jour ou créer les paramètres de notification d'un utilisateur
+exports.updateOrCreateUserSettings = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { globalNotificationDays, customNotifications } = req.body;
+
+    // Vérifier si les paramètres existent déjà pour l'utilisateur
+    let settings = await Settings.findOne({ userId });
+
+    if (!settings) {
+      // Créer de nouveaux paramètres si aucun n'existe
+      settings = new Settings({ userId });
+    }
+
+    // Mettre à jour les paramètres de notification globale uniquement si fourni
+    if (globalNotificationDays !== undefined) {
+      settings.globalNotificationDays = globalNotificationDays !== null ? globalNotificationDays : 30;
+    } else if (settings.globalNotificationDays === null) {
+      settings.globalNotificationDays = 30;
+    }
+
+    // Mettre à jour les notifications personnalisées uniquement si fourni
+    if (customNotifications) {
+      settings.customNotifications = customNotifications;
+    }
+
+    await settings.save();
+    res.status(200).json({ message: "Paramètres de notification mis à jour avec succès", settings });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour ou de la création des paramètres de notification de l\'utilisateur:', error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
+
+
+/*
 // Controller pour mettre à jour les paramètres de notification d'un utilisateur
 exports.updateUserSettings = async (req, res) => {
 
@@ -44,3 +80,4 @@ exports.addUserSettings = async (req, res) => {
     console.log(error);
   }
 }
+*/
