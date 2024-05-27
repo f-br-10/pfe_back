@@ -1,6 +1,7 @@
 const Client = require('../model/ClientModel.js');
-const User = require('../model/userModel.js');
+const User = require('../model/UserModel.js');
 const Service = require('../model/ServiceModel.js');
+const mongoose = require("mongoose");
 
 // Créer un nouveau client
 async function createClient(req, res) {
@@ -75,9 +76,7 @@ async function deleteClient(req, res) {
     console.error('Erreur lors de la suppression du client:', error);
     res.status(500).json({ message: 'Erreur lors de la suppression du client' });
   }
-}
-
-// Assigner des services à un client
+}// Assigner des services à un client
 async function assignServicesToClient(req, res) {
   try {
     const { clientId, serviceIds } = req.body;
@@ -94,16 +93,73 @@ async function assignServicesToClient(req, res) {
       return res.status(404).json({ message: 'Un ou plusieurs services non trouvés' });
     }
 
-    // Assigner les services au client
-    client.services = serviceIds;
+    // Filtrer les services déjà assignés à d'autres clients
+    const availableServiceIds = [];
+    for (const service of services) {
+      const existingClient = await Client.findOne({ services: service._id });
+      if (!existingClient || existingClient._id.equals(clientId)) {
+        availableServiceIds.push(service._id);
+      } else {
+        console.log(`Le service ${service._id} est déjà assigné au client ${existingClient._id}`);
+      }
+    }
+
+    // Vérifier si aucun service n'est disponible à assigner
+    if (availableServiceIds.length === 0) {
+      return res.status(400).json({ message: 'Le service est déjà assigné a un autre client ' });
+    }
+
+    // Assigner les services disponibles au client
+    client.services = availableServiceIds;
     await client.save();
 
-    return res.status(200).json({ message: 'Services assignés au client avec succès' });
+    return res.status(200).json({ message: 'Services assignés au client avec succès', services: availableServiceIds });
   } catch (error) {
     console.error('Erreur lors de l\'assignation des services au client:', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 }
+
+// Obtenir tous les clients avec leurs services associés
+async function getAllClientsWithServices(req, res) {
+  try {
+    const clients = await Client.find({ deleted: false, services: { $exists: true, $ne: [] } }).populate('services').exec();
+    res.status(200).json(clients);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des clients avec leurs services:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+}
+
+// Supprimer un service d'un client
+async function removeServiceFromClient(req, res) {
+  try {
+    const { clientId, serviceId } = req.body;
+
+    // Vérifier si le client existe
+    const client = await Client.findById(clientId);
+    if (!client || client.deleted) {
+      return res.status(404).json({ message: 'Client non trouvé' });
+    }
+
+    // Vérifier si le service existe et est assigné à ce client
+    const serviceIndex = client.services.findIndex(id => id.equals(new mongoose.Types.ObjectId(serviceId)));
+    if (serviceIndex === -1) {
+      return res.status(404).json({ message: 'Service non trouvé pour ce client' });
+    }
+
+    // Supprimer le service de la liste des services du client
+    client.services.splice(serviceIndex, 1);
+    await client.save();
+
+    return res.status(200).json({ message: 'Service supprimé du client avec succès' });
+  } catch (error) {
+    console.error('Erreur lors de la suppression du service du client:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+}
+
+
 
 module.exports = {
   createClient,
@@ -111,5 +167,6 @@ module.exports = {
   getAllClients,
   updateClient,
   deleteClient,
-  assignServicesToClient
+  assignServicesToClient,
+  getAllClientsWithServices,removeServiceFromClient
 };

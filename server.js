@@ -10,7 +10,7 @@ const settingsRoutes = require ("./router/settingsRoutes.js");
 const alerteRoutes = require ("./router/alerteRoutes.js");
 const ReclamationRoute = require ("./router/ReclamationRoute.js");
 const fournisseurRoute = require ("./router/fournisseurRoute.js");
-const clientRoute = require ("./router/clientRoute.js");
+const clientRoute = require ("./router/ClientRoute.js");
 const factureRoute = require ("./router/factureRoute.js");
 const syncRoute = require ("./router/syncRoute.js");
 const {fetchAndStoreOvhServices,updateServiceStatus} = require('./controller/serviceController'); 
@@ -70,7 +70,7 @@ mongoose
   cron.schedule('0 0 * * *', () => {
     // Fonction à exécuter tous les jours à minuit
     fetchAndStoreOvhServices()
-    fetchAndStoreReclamations()
+    fetchAndStoreReclamations() 
     updateServiceStatus()
     checkAndCreateAlerts()
     fetchAndStoreOvhBills()

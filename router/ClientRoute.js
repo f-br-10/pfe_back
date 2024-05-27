@@ -11,6 +11,10 @@ clientroute.get('/getallclient',verifyToken, clientController.getAllClients);
 
 clientroute.get('/getclient/:id', clientController.getClientById);
 
+clientroute.get('/getallwithservice', clientController.getAllClientsWithServices);
+
+clientroute.post('/remove-service-from-client', clientController.removeServiceFromClient);
+
 clientroute.patch('/updateclient/:id', clientController.updateClient);
 
 clientroute.delete('/deleteclient/:id', clientController.deleteClient);

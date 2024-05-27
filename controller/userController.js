@@ -218,3 +218,47 @@ exports.getUsersWithServicesCount = async (req, res) => {
         res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs', error });
     }
 };
+
+
+// Obtenir tous les utilisateurs avec leurs services associés
+exports.getAllUsersWithServices = async (req, res) => {
+
+    try {
+      const users = await User.find({ deleted: false, services: { $exists: true, $ne: [] } }).populate('services').exec();
+      res.status(200).json(users);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des utilisateurs avec leurs services:', error);
+      res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+  }
+  
+// Supprimer un service d'un utilisateur
+exports.removeServiceFromUser = async (req, res) => {
+
+    try {
+      const { userId, serviceId } = req.body;
+  
+      // Vérifier si l'utilisateur existe
+      const user = await User.findById(userId);
+      if (!user || user.deleted) {
+        return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      }
+  
+      // Vérifier si le service existe et est assigné à cet utilisateur
+      const serviceIndex = user.services.findIndex(id => id.equals(new mongoose.Types.ObjectId(serviceId)));
+      if (serviceIndex === -1) {
+        return res.status(404).json({ message: 'Service non trouvé pour cet utilisateur' });
+      }
+  
+      // Supprimer le service de la liste des services de l'utilisateur
+      user.services.splice(serviceIndex, 1);
+      await user.save();
+  
+      return res.status(200).json({ message: 'Service supprimé de l\'utilisateur avec succès' });
+    } catch (error) {
+      console.error('Erreur lors de la suppression du service de l\'utilisateur:', error);
+      res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+  }
+  
+
