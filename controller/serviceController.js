@@ -73,6 +73,10 @@ async function createService(req, res) {
     if (existingService) {
       return res.status(409).json({ message: 'Service existe déjà pour ce fournisseur avec les mêmes dates' });
     }
+    if (new Date(serviceData.date_debut) >= new Date(serviceData.date_fin)) {
+      return res.status(400).json({ message: 'La date de début doit être antérieure à la date de fin' });
+    }
+    
     const newService = new Service({
       ...serviceData,
       statique: true, 
@@ -145,16 +149,25 @@ async function updateService(req, res) {
     res.status(500).json({ message: 'Erreur lors de la mise à jour du service' });
   }
 }
-
 const deleteService = async (req, res) => {
   try {
     const serviceId = req.params.id;
-    
+
     // Mettre à jour le champ 'deleted' à true
     const service = await Service.findByIdAndUpdate(serviceId, { deleted: true }, { new: true });
-    
+
     if (!service) {
       return res.status(404).json({ message: 'Service non trouvé' });
+    }
+
+    // Mettre à jour la liste des services de l'utilisateur pour retirer le service supprimé
+    const users = await User.find({ services: serviceId });
+
+    // Parcourir tous les utilisateurs qui ont ce service associé
+    for (const user of users) {
+      // Retirer le service de la liste des services de l'utilisateur
+      user.services = user.services.filter(service => !service.equals(serviceId));
+      await user.save();
     }
 
     res.status(200).json({ message: 'Service supprimé (soft delete)' });
@@ -163,6 +176,7 @@ const deleteService = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la suppression du service' });
   }
 };
+
 
 async function updateServiceStatus() {
   try {

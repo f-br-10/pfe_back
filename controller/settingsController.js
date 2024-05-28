@@ -1,6 +1,7 @@
 // settingsController.js
 
 const Settings = require("../model/settingsModel.js");
+const User = require ("../model/UserModel.js");
 
 // Controller pour récupérer les paramètres de notification d'un utilisateur
 exports.getUserSettings = async (req, res) => {
@@ -35,19 +36,31 @@ exports.updateOrCreateUserSettings = async (req, res) => {
       settings.globalNotificationDays = 30;
     }
 
-    // Mettre à jour les notifications personnalisées uniquement si fourni
-    if (customNotifications) {
+    // Vérifier si les services dans customNotifications sont associés à l'utilisateur
+    if (customNotifications && customNotifications.length > 0) {
+      const user = await User.findById(userId).populate('services');
+      if (!user) {
+        return res.status(404).json({ message: "Utilisateur non trouvé" });
+      }
+
+      const userServiceIds = user.services.map(service => service._id.toString());
+      const invalidServices = customNotifications.filter(notification => !userServiceIds.includes(notification.serviceId));
+
+      if (invalidServices.length > 0) {
+        return res.status(400).json({ message: "Un ou plusieurs services spécifiés ne sont pas associés à l'utilisateur" });
+      }
+
+      // Mettre à jour les notifications personnalisées uniquement si tous les services sont valides
       settings.customNotifications = customNotifications;
     }
 
     await settings.save();
     res.status(200).json({ message: "Paramètres de notification mis à jour avec succès", settings });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour ou de la création des paramètres de notification de l\'utilisateur:', error);
+    console.error("Erreur lors de la mise à jour ou de la création des paramètres de notification de l'utilisateur:", error);
     res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
-
 
 /*
 // Controller pour mettre à jour les paramètres de notification d'un utilisateur
