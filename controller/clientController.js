@@ -47,6 +47,28 @@ async function getAllClients(req, res) {
     res.status(500).json({ message: 'Erreur lors de la récupération des clients' });
   }
 }
+const getClientsByUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Trouver l'utilisateur par son identifiant
+    const user = await User.findById(userId).populate('services');
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    // Récupérer les identifiants des services associés à cet utilisateur
+    const serviceIds = user.services.map(service => service._id);
+
+    // Trouver tous les clients ayant ces services dans leur liste de services
+    const clients = await Client.find({ services: { $in: serviceIds }, deleted: false }).populate('services');
+
+    res.status(200).json(clients);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des clients par utilisateur:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+};
 
 // Mettre à jour un client
 async function updateClient(req, res) {
@@ -168,5 +190,7 @@ module.exports = {
   updateClient,
   deleteClient,
   assignServicesToClient,
-  getAllClientsWithServices,removeServiceFromClient
+  getAllClientsWithServices,removeServiceFromClient,
+  getClientsByUser
+
 };
