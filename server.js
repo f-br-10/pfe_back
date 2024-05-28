@@ -13,11 +13,15 @@ const fournisseurRoute = require ("./router/fournisseurRoute.js");
 const clientRoute = require ("./router/ClientRoute.js");
 const factureRoute = require ("./router/factureRoute.js");
 const syncRoute = require ("./router/syncRoute.js");
+const chartRoute = require ("./router/chartRoutes.js");
+
 const {fetchAndStoreOvhServices,updateServiceStatus} = require('./controller/serviceController'); 
 const {fetchAndStoreReclamations} = require('./controller/ovhReclamationController');
 const {updateServiceReferences} = require('./controller/serviceController.js');
 const {checkAndCreateAlerts} = require('./controller/alerteController.js');
 const {fetchAndStoreOvhBills} = require('./controller/factureController.js');
+const {getAllUsersWithServices} = require('./controller/userController.js');
+
 
 const path = require("path");
 
@@ -45,7 +49,7 @@ app.use("/api/fournisseur", fournisseurRoute);
 app.use("/api/client", clientRoute);
 app.use("/api/facture", factureRoute);
 app.use("/api/sync", syncRoute);
-
+app.use("/api/chart", chartRoute);
 
 
 

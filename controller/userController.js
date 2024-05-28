@@ -1,4 +1,5 @@
 //userController.js
+const mongoose = require("mongoose");
 const User = require("../model/UserModel.js");
 const Service = require('../model/ServiceModel');
 const CryptoJS = require('crypto-js');
@@ -218,20 +219,18 @@ exports.getUsersWithServicesCount = async (req, res) => {
         res.status(500).json({ message: 'Erreur lors de la récupération des utilisateurs', error });
     }
 };
-
-
 // Obtenir tous les utilisateurs avec leurs services associés
 exports.getAllUsersWithServices = async (req, res) => {
-
-    try {
-      const users = await User.find({ deleted: false, services: { $exists: true, $ne: [] } }).populate('services').exec();
-      res.status(200).json(users);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des utilisateurs avec leurs services:', error);
-      res.status(500).json({ message: 'Erreur interne du serveur' });
-    }
+  try {
+    const users = await User.find(  {services: { $exists: true, $ne: [] }} ).populate('services').exec();
+    console.log(users);
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des utilisateurs avec leurs services:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
   }
-  
+};
+
 // Supprimer un service d'un utilisateur
 exports.removeServiceFromUser = async (req, res) => {
 

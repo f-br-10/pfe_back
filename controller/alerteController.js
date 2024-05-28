@@ -70,7 +70,7 @@ async function checkAndCreateAlerts() {
             console.log(`Alerte déjà existante pour le service ${service.nom} aujourd'hui.`);
           }
         } else {
-          console.log(`Pas d'alerte à créer pour le service ${service.nom}. Jours restants: ${daysDiff}`);
+          //console.log(`Pas d'alerte à créer pour le service ${service.nom}. Jours restants: ${daysDiff}`);
         }
       }
     }

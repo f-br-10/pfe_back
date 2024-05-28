@@ -1,0 +1,75 @@
+// controllers/chartController.js
+const Service = require('../model/ServiceModel');
+const Facture = require('../model/FactureModel');
+const Reclamation = require('../model/ReclamationModel');
+const User = require('../model/UserModel');
+const Client = require('../model/ClientModel');
+
+exports.getServicesByFournisseur = async (req, res) => {
+  try {
+    const services = await Service.aggregate([
+      { $match: { deleted: false } },
+      { $group: { _id: '$fournisseur', count: { $sum: 1 } } }
+    ]);
+    res.status(200).json(services);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des services par fournisseur:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+};
+
+exports.getFacturesByFournisseur = async (req, res) => {
+  try {
+    const factures = await Facture.aggregate([
+      { $match: { deleted: false } },
+      { $group: { _id: '$fournisseur', count: { $sum: 1 } } }
+    ]);
+    res.status(200).json(factures);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des factures par fournisseur:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+};
+
+exports.getReclamationsByCategory = async (req, res) => {
+  try {
+    const reclamations = await Reclamation.aggregate([
+      { $match: { deleted: false } },
+      { $group: { _id: '$category', count: { $sum: 1 } } }
+    ]);
+    res.status(200).json(reclamations);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des réclamations par catégorie:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+};
+
+exports.getUsersWithMostServices = async (req, res) => {
+  try {
+    const users = await User.aggregate([
+      { $match: { deleted: false } },
+      { $project: { nom: 1, prenom: 1, serviceCount: { $size: '$services' } } },
+      { $sort: { serviceCount: -1 } },
+      { $limit: 10 }
+    ]);
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des utilisateurs avec le plus de services:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+};
+
+exports.getClientsWithMostServices = async (req, res) => {
+  try {
+    const clients = await Client.aggregate([
+      { $match: { deleted: false } },
+      { $project: { nom: 1, serviceCount: { $size: '$services' } } },
+      { $sort: { serviceCount: -1 } },
+      { $limit: 10 }
+    ]);
+    res.status(200).json(clients);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des clients avec le plus de services:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+};
