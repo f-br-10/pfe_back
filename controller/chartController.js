@@ -9,7 +9,22 @@ exports.getServicesByFournisseur = async (req, res) => {
   try {
     const services = await Service.aggregate([
       { $match: { deleted: false } },
-      { $group: { _id: '$fournisseur', count: { $sum: 1 } } }
+      {
+        $group: {
+          _id: '$fournisseur',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'fournisseurs', // Le nom de la collection des fournisseurs dans votre base de données
+          localField: '_id',
+          foreignField: '_id',
+          as: 'fournisseurInfo'
+        }
+      },
+      { $unwind: '$fournisseurInfo' }, // Déplier le tableau résultant
+      { $project: { _id: 1, count: 1, nom: '$fournisseurInfo.nom' } } // Sélectionner uniquement les champs nécessaires
     ]);
     res.status(200).json(services);
   } catch (error) {
@@ -18,6 +33,20 @@ exports.getServicesByFournisseur = async (req, res) => {
   }
 };
 
+/*
+exports.getServicesByFournisseur = async (req, res) => {
+  try {
+    const services = await Service.aggregate([
+      { $match: { deleted: false } },
+      { $group: { _id: '$fournisseur', count: { $sum: 1 } } }
+    ]);
+    res.status(200).json(services);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des services par fournisseur:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+};
+*/
 exports.getFacturesByFournisseur = async (req, res) => {
   try {
     const factures = await Facture.aggregate([
