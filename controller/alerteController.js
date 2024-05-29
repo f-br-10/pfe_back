@@ -1,7 +1,7 @@
 const Alerte = require('../model/AlerteModel');
 const User = require('../model/UserModel');
 const Service = require('../model/ServiceModel');
-const Settings = require('../model/SettingsModel');
+const Settings = require('../model/settingsModel');
 
 async function checkAndCreateAlerts() {
   try {

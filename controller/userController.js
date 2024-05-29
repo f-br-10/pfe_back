@@ -164,35 +164,36 @@ exports.countUsers = async (req, res) => {
 }
 // Fonction pour attribuer des services disponibles à un utilisateur
 exports.assignServicesToUser = async (req, res) => {
-    try {
-        const { userId, serviceIds } = req.body;
+  try {
+      const { userId, serviceIds } = req.body;
 
-        // Vérifier si les identifiants sont valides
-        if (!userId || !Array.isArray(serviceIds)) {
-            return res.status(400).json({ message: 'Invalid input data' });
-        }
+      // Vérifier si les identifiants sont valides
+      if (!userId || !Array.isArray(serviceIds)) {
+          return res.status(400).json({ message: 'Invalid input data' });
+      }
 
-        // Vérifier si l'utilisateur existe
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+      // Vérifier si l'utilisateur existe
+      const user = await User.findById(userId);
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
 
-        // Vérifier si les services existent
-        const services = await Service.find({ _id: { $in: serviceIds } });
-        if (!services || services.length !== serviceIds.length) {
-            return res.status(404).json({ message: 'One or more services not found' });
-        }
+      // Vérifier si les services existent
+      const services = await Service.find({ _id: { $in: serviceIds } });
+      if (!services || services.length !== serviceIds.length) {
+          return res.status(404).json({ message: 'One or more services not found' });
+      }
 
-        // Assigner les services à l'utilisateur
-        user.services = serviceIds;
-        await user.save();
+      // Assigner les nouveaux services à l'utilisateur
+      const newServices = [...new Set([...user.services, ...serviceIds])]; // Merge and remove duplicates
+      user.services = newServices;
+      await user.save();
 
-        return res.status(200).json({ message: 'Services assigned to user successfully' });
-    } catch (error) {
-        console.error('Error assigning services to user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
+      return res.status(200).json({ message: 'Services assigned to user successfully' });
+  } catch (error) {
+      console.error('Error assigning services to user:', error);
+      res.status(500).json({ message: 'Internal server error' });
+  }
 };
 // Diagramme à barres pour montrer le nombre de services par utilisateur.
 exports.getUsersWithServicesCount = async (req, res) => {

@@ -51,7 +51,14 @@ app.use("/api/facture", factureRoute);
 app.use("/api/sync", syncRoute);
 app.use("/api/chart", chartRoute);
 
+/*
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, 'client/build')));
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname + '/client/build/index.html'));
+});**/
+  
 
 //Connect with DB
 mongoose
