@@ -78,6 +78,7 @@ mongoose
     console.log(error.message);
   });
 
+
   cron.schedule('0 0 * * *', () => {
     // Fonction à exécuter tous les jours à minuit
     fetchAndStoreOvhServices()

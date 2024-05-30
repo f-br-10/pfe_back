@@ -3,58 +3,58 @@ const Reclamation = require('../model/ReclamationModel');
 const Service = require('../model/ServiceModel');
 const Fournisseur = require('../model/FournisseurModel');
 const { createOvhInstance } = require('../ovhinit.js');
-
 // Fonction pour récupérer et stocker les réclamations depuis OVH pour chaque fournisseur
 async function fetchAndStoreReclamations() {
   try {
-    const fournisseurs = await Fournisseur.find();
+    const fournisseurs = await Fournisseur.find({ isOvh: true });
+
     for (const fournisseur of fournisseurs) {
+
       if (fournisseur.ovhApiKey && fournisseur.ovhSecret && fournisseur.ovhConsumerKey) {
-        const ovh = createOvhInstance(fournisseur.ovhApiKey, fournisseur.ovhSecret, fournisseur.ovhConsumerKey);
+        const ovhInstance = createOvhInstance(
+          fournisseur.ovhApiKey,
+          fournisseur.ovhSecret,
+          fournisseur.ovhConsumerKey
+        );
 
         try {
-          const reclamationsList = await ovh.requestPromised('GET', '/support/tickets');
+          // Récupérer la liste des réclamations OVH pour ce fournisseur
+          const reclamationsList = await ovhInstance.requestPromised('GET', '/support/tickets');
 
           for (const ticket of reclamationsList) {
             try {
-              const reclamationDetails = await ovh.requestPromised('GET', `/support/tickets/${ticket.id}`);
+              // Récupérer les détails de chaque réclamation
+              const reclamationDetails = await ovhInstance.requestPromised('GET', `/support/tickets/${ticket.id}`);
+              console.log('Détails de la réclamation', ticket.id, ':', reclamationDetails);
 
+              // Vérifier si la réclamation existe déjà dans la base de données
               const existingReclamation = await Reclamation.findOne({ ticketId: reclamationDetails.ticketId });
 
+              const reclamationData = {
+                accountId: reclamationDetails.accountId,
+                canBeClosed: reclamationDetails.canBeClosed,
+                category: reclamationDetails.category,
+                creationDate: new Date(reclamationDetails.creationDate),
+                lastMessageFrom: reclamationDetails.lastMessageFrom,
+                product: reclamationDetails.product,
+                score: reclamationDetails.score,
+                serviceName: reclamationDetails.serviceName,
+                state: reclamationDetails.state,
+                subject: reclamationDetails.subject,
+                ticketNumber: reclamationDetails.ticketNumber,
+                type: reclamationDetails.type,
+                updateDate: new Date(reclamationDetails.updateDate),
+                fournisseur: fournisseur._id // Associer à l'identifiant du fournisseur
+              };
+
               if (existingReclamation) {
-                await Reclamation.updateOne({ _id: existingReclamation._id }, {
-                  accountId: reclamationDetails.accountId,
-                  canBeClosed: reclamationDetails.canBeClosed,
-                  category: reclamationDetails.category,
-                  creationDate: new Date(reclamationDetails.creationDate),
-                  lastMessageFrom: reclamationDetails.lastMessageFrom,
-                  product: reclamationDetails.product,
-                  score: reclamationDetails.score,
-                  serviceName: reclamationDetails.serviceName,
-                  state: reclamationDetails.state,
-                  subject: reclamationDetails.subject,
-                  ticketNumber: reclamationDetails.ticketNumber,
-                  type: reclamationDetails.type,
-                  updateDate: new Date(reclamationDetails.updateDate),
-                  fournisseur: fournisseur._id // Associer à l'identifiant du fournisseur
-                });
+                // Mettre à jour les détails de la réclamation existante
+                await Reclamation.updateOne({ _id: existingReclamation._id }, reclamationData);
               } else {
+                // Créer une nouvelle réclamation
                 const newReclamation = new Reclamation({
-                  accountId: reclamationDetails.accountId,
-                  canBeClosed: reclamationDetails.canBeClosed,
-                  category: reclamationDetails.category,
-                  creationDate: new Date(reclamationDetails.creationDate),
-                  lastMessageFrom: reclamationDetails.lastMessageFrom,
-                  product: reclamationDetails.product,
-                  score: reclamationDetails.score,
-                  serviceName: reclamationDetails.serviceName,
-                  state: reclamationDetails.state,
-                  subject: reclamationDetails.subject,
+                  ...reclamationData,
                   ticketId: reclamationDetails.ticketId,
-                  ticketNumber: reclamationDetails.ticketNumber,
-                  type: reclamationDetails.type,
-                  updateDate: new Date(reclamationDetails.updateDate),
-                  fournisseur: fournisseur._id // Associer à l'identifiant du fournisseur
                 });
                 await newReclamation.save();
               }
@@ -71,7 +71,6 @@ async function fetchAndStoreReclamations() {
     console.error('Erreur lors de la récupération des fournisseurs:', error);
   }
 }
-
 // Créer une réclamation
 async function createReclamation(req, res) {
   try {
@@ -94,7 +93,7 @@ async function createReclamation(req, res) {
       return res.status(404).send('Fournisseur non trouvé');
     }
 
-    if (fournisseur.ovhApiKey && fournisseur.ovhSecret && fournisseur.ovhConsumerKey) {
+    if (fournisseur.isOvh) {
       // Création d'une réclamation OVH
       const ovh = createOvhInstance(fournisseur.ovhApiKey, fournisseur.ovhSecret, fournisseur.ovhConsumerKey);
 
@@ -173,7 +172,6 @@ async function deleteReclamation(req, res) {
     res.status (500).send('Erreur lors de la suppression de la réclamation: ' + error.message);
   }
 }
-
 // Mettre à jour une réclamation OVH
 async function updateOvhReclamation(req, res) {
   try {
@@ -186,20 +184,24 @@ async function updateOvhReclamation(req, res) {
     }
 
     const fournisseur = await Fournisseur.findById(reclamation.fournisseur);
-    if (!fournisseur || !fournisseur.ovhApiKey || !fournisseur.ovhSecret || !fournisseur.ovhConsumerKey) {
+    if (!fournisseur || !fournisseur.isOvh || !fournisseur.ovhApiKey || !fournisseur.ovhSecret || !fournisseur.ovhConsumerKey) {
       return res.status(400).send('Fournisseur OVH non configuré');
     }
 
-    const ovh = createOvhInstance(fournisseur.ovhApiKey, fournisseur.ovhSecret, fournisseur.ovhConsumerKey);
-    const updatedReclamation = await ovh.requestPromised('POST', `/support/tickets/${ticketId}/reply`, { body });
+    const ovhInstance = createOvhInstance(fournisseur.ovhApiKey, fournisseur.ovhSecret, fournisseur.ovhConsumerKey);
+    const updatedReclamation = await ovhInstance.requestPromised('POST', `/support/tickets/${ticketId}/reply`, { body });
 
-    await Reclamation.findOneAndUpdate({ ticketId }, { $set: { lastMessageFrom: 'customer', updateDate: new Date() } }, { new: true });
+    await Reclamation.findOneAndUpdate(
+      { ticketId }, 
+      { $set: { lastMessageFrom: 'customer', updateDate: new Date() } }, 
+      { new: true }
+    );
     res.status(200).json(updatedReclamation);
   } catch (error) {
+    console.error('Erreur lors de la mise à jour de la réclamation OVH:', error);
     res.status(500).send('Erreur lors de la mise à jour de la réclamation OVH: ' + error.message);
   }
 }
-
 // Fermer une réclamation OVH
 async function closeOvhReclamation(req, res) {
   try {
@@ -211,20 +213,24 @@ async function closeOvhReclamation(req, res) {
     }
 
     const fournisseur = await Fournisseur.findById(reclamation.fournisseur);
-    if (!fournisseur || !fournisseur.ovhApiKey || !fournisseur.ovhSecret || !fournisseur.ovhConsumerKey) {
+    if (!fournisseur || !fournisseur.isOvh || !fournisseur.ovhApiKey || !fournisseur.ovhSecret || !fournisseur.ovhConsumerKey) {
       return res.status(400).send('Fournisseur OVH non configuré');
     }
 
-    const ovh = createOvhInstance(fournisseur.ovhApiKey, fournisseur.ovhSecret, fournisseur.ovhConsumerKey);
-    const closedReclamation = await ovh.requestPromised('POST', `/support/tickets/${ticketId}/close`);
+    const ovhInstance = createOvhInstance(fournisseur.ovhApiKey, fournisseur.ovhSecret, fournisseur.ovhConsumerKey);
+    const closedReclamation = await ovhInstance.requestPromised('POST', `/support/tickets/${ticketId}/close`);
 
-    await Reclamation.findOneAndUpdate({ ticketId }, { $set: { state: 'closed', updateDate: new Date() } }, { new: true });
+    await Reclamation.findOneAndUpdate(
+      { ticketId }, 
+      { $set: { state: 'closed', updateDate: new Date() } }, 
+      { new: true }
+    );
     res.status(200).json(closedReclamation);
   } catch (error) {
+    console.error('Erreur lors de la fermeture de la réclamation OVH:', error);
     res.status(500).send('Erreur lors de la fermeture de la réclamation OVH: ' + error.message);
   }
 }
-
 // Obtenir toutes les réclamations
 async function getAllReclamations(req, res) {
   try {

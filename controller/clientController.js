@@ -98,7 +98,8 @@ async function deleteClient(req, res) {
     console.error('Erreur lors de la suppression du client:', error);
     res.status(500).json({ message: 'Erreur lors de la suppression du client' });
   }
-}// Assigner des services à un client
+}
+// Assigner des services à un client
 async function assignServicesToClient(req, res) {
   try {
     const { clientId, serviceIds } = req.body;

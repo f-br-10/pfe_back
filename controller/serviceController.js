@@ -4,38 +4,51 @@ const Service = require('../model/ServiceModel');
 const User = require('../model/UserModel.js');
 const { createOvhInstance }  = require('../ovhinit.js');
 const Fournisseur = require('../model/FournisseurModel.js');
-
-
 async function fetchAndStoreOvhServices() {
   try {
-    const fournisseursOvh = await Fournisseur.find({ nom: 'OVH' });
+    // Trouver tous les fournisseurs marqués comme OVH
+    const fournisseursOvh = await Fournisseur.find({ isOvh: true });
+    //console.log('Fournisseurs OVH:', fournisseursOvh);
+
     for (const fournisseur of fournisseursOvh) {
+      //console.log('Traitement du fournisseur:', fournisseur.nom);
+
+      // Créer une instance OVH pour le fournisseur
       const ovhInstance = createOvhInstance(
         fournisseur.ovhApiKey,
         fournisseur.ovhSecret,
-        fournisseur.ovhConsumerKey
+        fournisseur.ovhConsumerKey                    
       );
 
       // Récupérer la liste des services OVH pour ce fournisseur
       const response = await ovhInstance.requestPromised('GET', '/service');
+      //console.log(`Réponse des services pour ${fournisseur.nom}:`, response);
 
+      // Récupérer tous les services associés à ce fournisseur
       const allServices = await Service.find({ fournisseur: fournisseur._id });
+      //console.log(`Tous les services pour ${fournisseur.nom}:`, allServices);
 
       // Traiter la réponse de l'API OVH
       for (const serviceId of response) {
         try {
           // Récupérer les détails de chaque service
           const serviceDetails = await ovhInstance.requestPromised('GET', `/services/${serviceId}`);
+          //console.log(`Détails du service ${serviceId} pour ${fournisseur.nom}:`, serviceDetails);
 
+          // Chercher un service existant avec le même nom et fournisseur
           const existingService = await Service.findOne({ nom: serviceDetails.resource.name.toLowerCase(), fournisseur: fournisseur._id });
 
           if (existingService) {
+            console.log(`Service existant trouvé:`, existingService.nom);
+
+            // Mettre à jour le service existant
             existingService.date_debut = new Date(serviceDetails.engagementDate);
             existingService.date_fin = new Date(serviceDetails.expirationDate);
             existingService.statut = serviceDetails.state;
             existingService.statique = false;
             await existingService.save();
           } else {
+            // Créer un nouveau service si aucun service existant n'est trouvé
             const newService = new Service({
               nom: serviceDetails.resource.name,
               date_debut: new Date(serviceDetails.engagementDate),
@@ -47,17 +60,20 @@ async function fetchAndStoreOvhServices() {
             });
             await newService.save();
             fournisseur.services.push(newService._id);
+            console.log(`Nouveau service créé:`, newService.nom);
           }
         } catch (error) {
           console.error('Erreur lors de la récupération et du stockage des détails du service OVH:', error);
         }
       }
       await fournisseur.save();
+      //console.log(`Services sauvegardés pour le fournisseur:`, fournisseur.nom);
     }
   } catch (error) {
     console.error('Erreur lors de la récupération des services OVH:', error);
   }
 }
+
 
 async function createService(req, res) {
   try {

@@ -10,7 +10,7 @@ async function createFournisseur(req, res) {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
 
-    const { nom, adresse, telephone, email } = req.body;
+    const { nom, adresse, telephone, email, isOvh, ovhApiKey, ovhSecret, ovhConsumerKey } = req.body;
 
     // Vérifier si un fournisseur avec le même nom et la même adresse existe déjà
     const existingFournisseur = await Fournisseur.findOne({ nom, adresse });
@@ -24,13 +24,14 @@ async function createFournisseur(req, res) {
       adresse,
       telephone,
       email,
+      isOvh: isOvh || false  // Assigner isOvh à false par défaut si non fourni
     };
 
-    // Ajouter les clés OVH uniquement si le nom du fournisseur inclut "OVH"
-    if (nom.toLowerCase().includes('ovh')) {
-      fournisseurData.ovhApiKey = req.body.ovhApiKey;
-      fournisseurData.ovhSecret = req.body.ovhSecret;
-      fournisseurData.ovhConsumerKey = req.body.ovhConsumerKey;
+    // Ajouter les clés OVH uniquement si le champ isOvh est vrai
+    if (isOvh) {
+      fournisseurData.ovhApiKey = ovhApiKey;
+      fournisseurData.ovhSecret = ovhSecret;
+      fournisseurData.ovhConsumerKey = ovhConsumerKey;
     }
 
     const newFournisseur = new Fournisseur(fournisseurData);
@@ -42,6 +43,7 @@ async function createFournisseur(req, res) {
     res.status(500).json({ message: 'Erreur lors de la création du fournisseur' });
   }
 }
+
 
 // Récupérer un fournisseur par son ID
 async function getFournisseurById(req, res) {

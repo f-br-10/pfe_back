@@ -4,7 +4,7 @@ const { createOvhInstance } = require('../ovhinit');
 
 async function fetchAndStoreOvhBills() {
   try {
-    const fournisseursOvh = await Fournisseur.find({ nom: 'OVH' });
+    const fournisseursOvh = await Fournisseur.find({ isOvh: true });
 
     for (const fournisseur of fournisseursOvh) {
       const ovhInstance = createOvhInstance(
@@ -59,6 +59,7 @@ async function fetchAndStoreOvhBills() {
     console.error('Erreur lors de la récupération des factures OVH:', error);
   }
 }
+
 
 // Obtenir toutes les factures
 async function getAllFactures(req, res) {

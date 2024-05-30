@@ -17,8 +17,8 @@ const reclamationSchema = new mongoose.Schema({
   ticketNumber: { type: Number },
   type: { type: String, enum: ['criticalIntervention', 'genericRequest'] },
   updateDate: { type: Date },
-  fournisseur: { type: mongoose.Schema.Types.ObjectId, ref: 'Fournisseur' }, // Référence au fournisseur
-  deleted: { type: Boolean, default: false }, // Champ pour suppression logique
+  fournisseur: { type: mongoose.Schema.Types.ObjectId, ref: 'Fournisseur' }, 
+  deleted: { type: Boolean, default: false }, 
   body: { type: String } // Ajouté pour les réclamations non-OVH
 });
 
