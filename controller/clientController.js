@@ -6,6 +6,15 @@ const mongoose = require("mongoose");
 // Créer un nouveau client
 async function createClient(req, res) {
   try {
+    // Recherche du client existant
+    const existingClient = await Client.findOne({ email: req.body.email });
+    
+    // Vérification si le client existe déjà
+    if (existingClient) {
+      return res.status(400).json({ message: 'Le client existe déjà' });
+    }
+
+    // Création du client s'il n'existe pas encore
     const newClient = await Client.create(req.body);
     return res.status(201).json(newClient);
   } catch (error) {
@@ -99,6 +108,7 @@ async function deleteClient(req, res) {
     res.status(500).json({ message: 'Erreur lors de la suppression du client' });
   }
 }
+
 // Assigner des services à un client
 async function assignServicesToClient(req, res) {
   try {
@@ -132,11 +142,14 @@ async function assignServicesToClient(req, res) {
       return res.status(400).json({ message: 'Le service est déjà assigné a un autre client ' });
     }
 
+    // Fusionner les services existants et les nouveaux services disponibles
+    const newServices = [...new Set([...client.services, ...availableServiceIds])];
+
     // Assigner les services disponibles au client
-    client.services = availableServiceIds;
+    client.services = newServices;
     await client.save();
 
-    return res.status(200).json({ message: 'Services assignés au client avec succès', services: availableServiceIds });
+    return res.status(200).json({ message: 'Services assignés au client avec succès', services: newServices });
   } catch (error) {
     console.error('Erreur lors de l\'assignation des services au client:', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });

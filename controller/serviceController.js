@@ -296,6 +296,82 @@ async function updateServiceReferences() {
   console.log('Mise à jour des références de services terminée.');
 }
 
+function addMonthsToDate(date, months) {
+  const result = new Date(date);
+  const day = result.getDate();
+  
+  // Calculate target month and year
+  let targetMonth = result.getMonth() + months;
+  let newYear = result.getFullYear();
+
+  // Adjust year and month
+  while (targetMonth < 0) {
+    targetMonth += 12;
+    newYear -= 1;
+  }
+  while (targetMonth > 11) {
+    targetMonth -= 12;
+    newYear += 1;
+  }
+
+  // Set year and month
+  result.setFullYear(newYear);
+  result.setMonth(targetMonth);
+
+  // Handle the edge case where the day of the month is invalid
+  const daysInMonth = new Date(newYear, targetMonth + 1, 0).getDate();
+  if (day > daysInMonth) {
+    result.setDate(daysInMonth);
+  } else {
+    result.setDate(day);
+  }
+
+  return result;
+}
+
+// Function to renew a service
+async function renewService(req, res) {
+  try {
+    const { serviceId, numberOfMonths } = req.body;
+    console.log(req.body);
+
+    // Validate input
+    if (!serviceId || !numberOfMonths || numberOfMonths <= 0) {
+      return res.status(400).json({ message: 'Invalid input data' });
+    }
+
+    // Find the service by ID
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    // Check the current expiration date of the service
+    const expirationDate = new Date(service.date_fin);
+
+    // Calculate the new expiration date by adding the specified number of months
+    const newExpirationDate = addMonthsToDate(expirationDate, numberOfMonths);
+
+    // Update the service's expiration date
+    service.date_fin = newExpirationDate;
+    await service.save();
+
+    return res.status(200).json({ message: 'Service renewed successfully', newExpirationDate });
+  } catch (error) {
+    console.error('Error renewing service:', error);
+    res.status(500).json({ message: 'Error renewing service' });
+  }
+}
+
+// Fonction utilitaire pour formater une date en chaîne de caractères
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/*
 async function renewService(req, res) {
   try {
       const { serviceId, numberOfMonths } = req.body;
@@ -326,7 +402,7 @@ async function renewService(req, res) {
       res.status(500).json({ message: 'Error renewing service' });
   }
 }
-
+*/
 
 module.exports = {
   createService, getServiceById, getAllServices,
@@ -336,22 +412,3 @@ module.exports = {
      renewService
 };
 
-
-
-function formatDate(dateString) {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  
-  return `${year}-${month}-${day}`;
-}
-
-
-function addMonthsToDate(date, months) {
-  const newDate = new Date(date);
-  const currentMonth = newDate.getMonth();
-  const newMonth = currentMonth + months;
-  newDate.setMonth(newMonth);
-  return newDate;
-}
