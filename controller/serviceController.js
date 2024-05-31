@@ -122,7 +122,9 @@ async function getServiceById(req, res) {
     console.error('Erreur lors de la récupération du service:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération du service' });
   }
-}const getAllServices = async (req, res) => {
+}
+
+const getAllServices = async (req, res) => {
   try {
     const services = await Service.find({
       $or: [{ deleted: { $exists: false } }, { deleted: false }]
@@ -141,12 +143,26 @@ async function getServiceById(req, res) {
   }
 };
 
-async function getServicesWithUser(req,res) {
+
+async function getServicesWithUser(req, res) {
   try {
     const userId = req.user._id;
-    const user = await User.findById(userId).populate('services');
-    if (!user) return res.status(404).json({ message: 'Utilisateur non trouvé' });
-    return res.json(user.services);
+    const user = await User.findById(userId).populate({
+      path: 'services',
+      match: { deleted: false }
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    const formattedServices = user.services.map(service => ({
+      ...service._doc,
+      date_debut: formatDate(service.date_debut),
+      date_fin: formatDate(service.date_fin)
+    }));
+
+    return res.status(200).json(formattedServices);
   } catch (error) {
     console.error('Erreur lors de la récupération des services de l\'utilisateur:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération des services de l\'utilisateur' });
