@@ -8,6 +8,7 @@ const CryptoJS = require('crypto-js');
 exports.updateUser = async (req, res) => {
   try {
       const user = req.user;
+      const id = req.query.id;
       const file = req.file;
       if (file) {
           req.body.image = file.filename;
@@ -15,7 +16,7 @@ exports.updateUser = async (req, res) => {
             deleteFile(path.join(__dirname, `../uploads/${user.image}`));
           }
       }
-      const userFinded = await User.findByIdAndUpdate(user._id, { $set: req.body },{new:true});
+      const userFinded = await User.findByIdAndUpdate(id ? id : user._id, { $set: req.body },{new:true});
       //if user exists
       if (!userFinded) {
           return res.status(500).json({ message: "User not found" });

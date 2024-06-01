@@ -16,6 +16,8 @@ UserRoutes.get('/userinfo',verifyToken, getProfile);
 //Update User Info
 UserRoutes.patch('/update',verifyToken, upload.single("image"), updateUser);
 
+UserRoutes.patch('/update-other-user/:id',verifyToken, updateUser);
+
 UserRoutes.patch("/update-role/:id", verifyToken, updateUserRole)
 
 //Update User Password
