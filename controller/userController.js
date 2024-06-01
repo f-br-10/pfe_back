@@ -161,8 +161,7 @@ exports.countUsers = async (req, res) => {
     } catch (error) {
         return res.status(500).json(error);
     }
-}
-// Fonction pour attribuer des services disponibles à un utilisateur
+}// Fonction pour attribuer des services disponibles à un utilisateur
 exports.assignServicesToUser = async (req, res) => {
   try {
       const { userId, serviceIds } = req.body;
@@ -184,9 +183,17 @@ exports.assignServicesToUser = async (req, res) => {
           return res.status(404).json({ message: 'One or more services not found' });
       }
 
+      // Filtrer les services que l'utilisateur a déjà
+      const existingServiceIds = user.services.map(service => service.toString());
+      const newServiceIds = serviceIds.filter(serviceId => !existingServiceIds.includes(serviceId));
+
+      // Vérifier si des services restent à assigner
+      if (newServiceIds.length === 0) {
+          return res.status(400).json({ message: 'All specified services are already assigned to the user' });
+      }
+
       // Assigner les nouveaux services à l'utilisateur
-      const newServices = [...new Set([...user.services, ...serviceIds])]; // Merge and remove duplicates
-      user.services = newServices;
+      user.services = [...new Set([...existingServiceIds, ...newServiceIds])];
       await user.save();
 
       return res.status(200).json({ message: 'Services assigned to user successfully' });
@@ -195,6 +202,7 @@ exports.assignServicesToUser = async (req, res) => {
       res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 // Diagramme à barres pour montrer le nombre de services par utilisateur.
 exports.getUsersWithServicesCount = async (req, res) => {
     try {

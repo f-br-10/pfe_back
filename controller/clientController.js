@@ -108,7 +108,6 @@ async function deleteClient(req, res) {
     res.status(500).json({ message: 'Erreur lors de la suppression du client' });
   }
 }
-
 // Assigner des services à un client
 async function assignServicesToClient(req, res) {
   try {
@@ -128,33 +127,47 @@ async function assignServicesToClient(req, res) {
 
     // Filtrer les services déjà assignés à d'autres clients
     const availableServiceIds = [];
+    const alreadyAssignedServices = [];
     for (const service of services) {
       const existingClient = await Client.findOne({ services: service._id });
       if (!existingClient || existingClient._id.equals(clientId)) {
         availableServiceIds.push(service._id);
       } else {
         console.log(`Le service ${service._id} est déjà assigné au client ${existingClient._id}`);
+        alreadyAssignedServices.push(service._id);
       }
     }
 
     // Vérifier si aucun service n'est disponible à assigner
     if (availableServiceIds.length === 0) {
-      return res.status(400).json({ message: 'Le service est déjà assigné a un autre client ' });
+      return res.status(400).json({ message: 'Tous les services demandés sont déjà assignés à un autre client.' });
+    }
+
+    // Vérifier si le client a déjà certains services attribués
+    const existingServices = client.services.map(service => service.toString());
+    const newServices = availableServiceIds.filter(serviceId => !existingServices.includes(serviceId.toString()));
+
+    if (newServices.length === 0) {
+      return res.status(400).json({ message: 'Le client a déjà tous les services demandés.' });
     }
 
     // Fusionner les services existants et les nouveaux services disponibles
-    const newServices = [...new Set([...client.services, ...availableServiceIds])];
+    const updatedServices = [...new Set([...client.services, ...newServices])];
 
     // Assigner les services disponibles au client
-    client.services = newServices;
+    client.services = updatedServices;
     await client.save();
 
-    return res.status(200).json({ message: 'Services assignés au client avec succès', services: newServices });
+    return res.status(200).json({ 
+      message: 'Services assignés au client avec succès', 
+      services: updatedServices 
+    });
   } catch (error) {
     console.error('Erreur lors de l\'assignation des services au client:', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 }
+
 
 // Obtenir tous les clients avec leurs services associés
 async function getAllClientsWithServices(req, res) {
