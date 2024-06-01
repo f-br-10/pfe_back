@@ -14,7 +14,6 @@ exports.getUserSettings = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la récupération des paramètres de notification de l'utilisateur" });
   }
 }
-
 // Controller pour mettre à jour ou créer les paramètres de notification d'un utilisateur
 exports.updateOrCreateUserSettings = async (req, res) => {
   try {
@@ -50,8 +49,23 @@ exports.updateOrCreateUserSettings = async (req, res) => {
         return res.status(400).json({ message: "Un ou plusieurs services spécifiés ne sont pas associés à l'utilisateur" });
       }
 
-      // Mettre à jour les notifications personnalisées uniquement si tous les services sont valides
-      settings.customNotifications = customNotifications;
+      // Fusionner les notifications existantes et les nouvelles notifications
+      const notificationMap = new Map();
+      
+      // Ajouter les notifications existantes au map
+      if (settings.customNotifications) {
+        settings.customNotifications.forEach(notification => {
+          notificationMap.set(notification.serviceId, notification);
+        });
+      }
+
+      // Ajouter les nouvelles notifications au map, écrasant les anciennes si nécessaire
+      customNotifications.forEach(notification => {
+        notificationMap.set(notification.serviceId, notification);
+      });
+
+      // Convertir le map en array
+      settings.customNotifications = Array.from(notificationMap.values());
     }
 
     await settings.save();

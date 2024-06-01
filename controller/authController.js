@@ -1,5 +1,5 @@
 //authController.js
-const User = require("../model/userModel.js");
+const User = require("../model/UserModel.js");
 const CryptoJS = require('crypto-js');
 const jwt = require('jsonwebtoken');
 const { createChangePasswordLink } = require("../service/authService.js");

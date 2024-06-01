@@ -74,7 +74,53 @@ async function fetchAndStoreOvhServices() {
   }
 }
 
+async function createService(req, res) {
+  try {
+    const { fournisseurId, ...serviceData } = req.body;
+    const userId = req.user._id; // Assurez-vous que req.user contient l'ID de l'utilisateur qui crée le service
 
+    const fournisseur = await Fournisseur.findById(fournisseurId);
+    if (!fournisseur) {
+      return res.status(404).json({ message: 'Fournisseur non trouvé' });
+    }
+
+    // Vérifier si un service avec le même nom et les mêmes dates existe déjà pour ce fournisseur
+    const existingService = await Service.findOne({ fournisseur: fournisseurId, nom: serviceData.nom, date_debut: serviceData.date_debut, date_fin: serviceData.date_fin });
+    if (existingService) {
+      return res.status(409).json({ message: 'Service existe déjà pour ce fournisseur avec les mêmes dates' });
+    }
+    if (new Date(serviceData.date_debut) >= new Date(serviceData.date_fin)) {
+      return res.status(400).json({ message: 'La date de début doit être antérieure à la date de fin' });
+    }
+
+    const newService = new Service({
+      ...serviceData,
+      statique: true, 
+      fournisseur: fournisseurId
+    });
+
+    await newService.save();
+
+    fournisseur.services.push(newService._id);
+    await fournisseur.save();
+
+    // Vérifier si l'utilisateur est administrateur
+    const user = await User.findById(userId);
+    if (!user.isAdmin && !user.isSuperAdmin) {
+      // Ajouter le service à l'utilisateur s'il n'est pas administrateur
+      user.services.push(newService._id);
+      await user.save();
+    }
+
+    return res.status(201).json(newService);
+  } catch (error) {
+    console.error('Erreur lors de la création du service:', error);
+    res.status(500).json({ message: 'Erreur lors de la création du service' });
+  }
+}
+
+
+/*
 async function createService(req, res) {
   try {
     const { fournisseurId, ...serviceData } = req.body;
@@ -110,7 +156,7 @@ async function createService(req, res) {
     res.status(500).json({ message: 'Erreur lors de la création du service' });
   }
 }
-
+*/
 async function getServiceById(req, res) {
   try {
     const service = await Service.findById(req.params.id);
@@ -329,11 +375,11 @@ function addMonthsToDate(date, months) {
   return result;
 }
 
+
 // Function to renew a service
 async function renewService(req, res) {
   try {
     const { serviceId, numberOfMonths } = req.body;
-    console.log(req.body);
 
     // Validate input
     if (!serviceId || !numberOfMonths || numberOfMonths <= 0) {
@@ -344,6 +390,11 @@ async function renewService(req, res) {
     const service = await Service.findById(serviceId);
     if (!service) {
       return res.status(404).json({ message: 'Service not found' });
+    }
+
+    // Check if the service is static
+    if (!service.statique) {
+      return res.status(400).json({ message: 'Service cannot be renewed because it is not static' });
     }
 
     // Check the current expiration date of the service
@@ -362,7 +413,6 @@ async function renewService(req, res) {
     res.status(500).json({ message: 'Error renewing service' });
   }
 }
-
 // Fonction utilitaire pour formater une date en chaîne de caractères
 function formatDate(date) {
   const year = date.getFullYear();
@@ -370,39 +420,6 @@ function formatDate(date) {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
-
-/*
-async function renewService(req, res) {
-  try {
-      const { serviceId, numberOfMonths } = req.body;
-      const service = await Service.findById(serviceId);
-      if (!service) {
-          return res.status(404).json({ message: 'Service not found' });
-      }
-      
-      const currentDate = new Date();
-      const expirationDate = new Date(service.date_fin);
-      
-      let newExpirationDate;
-      if (numberOfMonths >= 12) {
-          const years = Math.floor(numberOfMonths / 12);
-          const remainingMonths = numberOfMonths % 12;
-          newExpirationDate = addMonthsToDate(expirationDate, remainingMonths);
-          newExpirationDate.setFullYear(newExpirationDate.getFullYear() + years);
-      } else {
-          newExpirationDate = addMonthsToDate(expirationDate, numberOfMonths);
-      }
-      
-      service.date_fin = newExpirationDate;
-      await service.save();
-      
-      return res.status(200).json({ message: 'Service renewed successfully', newExpirationDate });
-  } catch (error) {
-      console.error('Error renewing service:', error);
-      res.status(500).json({ message: 'Error renewing service' });
-  }
-}
-*/
 
 module.exports = {
   createService, getServiceById, getAllServices,
