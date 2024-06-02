@@ -407,6 +407,8 @@ async function renewService(req, res) {
     service.date_fin = newExpirationDate;
     await service.save();
 
+    await updateServiceStatus();
+
     return res.status(200).json({ message: 'Service renewed successfully', newExpirationDate });
   } catch (error) {
     console.error('Error renewing service:', error);

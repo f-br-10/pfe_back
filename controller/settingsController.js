@@ -51,17 +51,17 @@ exports.updateOrCreateUserSettings = async (req, res) => {
 
       // Fusionner les notifications existantes et les nouvelles notifications
       const notificationMap = new Map();
-      
+
       // Ajouter les notifications existantes au map
       if (settings.customNotifications) {
         settings.customNotifications.forEach(notification => {
-          notificationMap.set(notification.serviceId, notification);
+          notificationMap.set(notification.serviceId.toString(), notification);
         });
       }
 
       // Ajouter les nouvelles notifications au map, écrasant les anciennes si nécessaire
       customNotifications.forEach(notification => {
-        notificationMap.set(notification.serviceId, notification);
+        notificationMap.set(notification.serviceId.toString(), notification);
       });
 
       // Convertir le map en array
