@@ -9,8 +9,10 @@ AuthRoutes.post('/register', registerUser);
 // Login User
 AuthRoutes.post('/login', loginUser);
 
+//Forget Password
 AuthRoutes.post("/forget-password", forgetPasswordRequest);
 
+//reset Password Verification
 AuthRoutes.put("/create-password/:activation_Token",resetPasswordVerification)
 
 module.exports = AuthRoutes;

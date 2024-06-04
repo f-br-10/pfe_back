@@ -1,4 +1,3 @@
-//AlerteModel.js
 
 const mongoose = require('mongoose');
 

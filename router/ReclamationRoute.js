@@ -15,12 +15,16 @@ const {
 
 // Route pour créer une nouvelle réclamation OVH
 reclamation.post('/create', createReclamation);
+
+// Route pour supprimer une réclamation 
 reclamation.delete("/:id", deleteReclamation);
+
 // Route pour mettre à jour une réclamation OVH
 reclamation.patch('/update/:ticketId', updateOvhReclamation);
 
 // Route pour fermer une réclamation OVH
 reclamation.post('/:ticketId/close', closeOvhReclamation);
+
 // Route pour obtenir toutes les réclamations BD
 reclamation.get('/getall', getAllReclamations);
 

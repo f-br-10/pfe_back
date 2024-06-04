@@ -9,6 +9,7 @@ alerteRoutes.get('/user', verifyToken, getAlertesByUserId);
 // Route pour marquer une alerte comme lue
 alerteRoutes.put('/:id/read', verifyToken, markAlerteAsRead);
 
+// Route pour supprimer une alerte 
 alerteRoutes.delete('/:id', verifyToken, deleteAlerte);
 
 

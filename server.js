@@ -8,9 +8,9 @@ const UserRoutes = require ("./router/userRoutes.js");
 const serviceroute = require ("./router/serviceRoute.js");
 const settingsRoutes = require ("./router/settingsRoutes.js");
 const alerteRoutes = require ("./router/alerteRoutes.js");
-const ReclamationRoute = require ("./router/ReclamationRoute.js");
+const ReclamationRoute = require ("./router/reclamationRoute.js");
 const fournisseurRoute = require ("./router/fournisseurRoute.js");
-const clientRoute = require ("./router/ClientRoute.js");
+const clientRoute = require ("./router/clientRoute.js");
 const factureRoute = require ("./router/factureRoute.js");
 const syncRoute = require ("./router/syncRoute.js");
 const chartRoute = require ("./router/chartRoutes.js");
@@ -51,14 +51,6 @@ app.use("/api/facture", factureRoute);
 app.use("/api/sync", syncRoute);
 app.use("/api/chart", chartRoute);
 
-/*
-// Serve static files from the React frontend app
-app.use(express.static(path.join(__dirname, 'client/build')));
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname + '/client/build/index.html'));
-});**/
-  
 
 //Connect with DB
 mongoose

@@ -8,10 +8,7 @@ async function fetchAndStoreOvhServices() {
   try {
     // Trouver tous les fournisseurs marqués comme OVH
     const fournisseursOvh = await Fournisseur.find({ isOvh: true });
-    //console.log('Fournisseurs OVH:', fournisseursOvh);
-
     for (const fournisseur of fournisseursOvh) {
-      //console.log('Traitement du fournisseur:', fournisseur.nom);
 
       // Créer une instance OVH pour le fournisseur
       const ovhInstance = createOvhInstance(
@@ -22,18 +19,15 @@ async function fetchAndStoreOvhServices() {
 
       // Récupérer la liste des services OVH pour ce fournisseur
       const response = await ovhInstance.requestPromised('GET', '/service');
-      //console.log(`Réponse des services pour ${fournisseur.nom}:`, response);
 
       // Récupérer tous les services associés à ce fournisseur
       const allServices = await Service.find({ fournisseur: fournisseur._id });
-      //console.log(`Tous les services pour ${fournisseur.nom}:`, allServices);
 
       // Traiter la réponse de l'API OVH
       for (const serviceId of response) {
         try {
           // Récupérer les détails de chaque service
           const serviceDetails = await ovhInstance.requestPromised('GET', `/services/${serviceId}`);
-          //console.log(`Détails du service ${serviceId} pour ${fournisseur.nom}:`, serviceDetails);
 
           // Chercher un service existant avec le même nom et fournisseur
           const existingService = await Service.findOne({ nom: serviceDetails.resource.name.toLowerCase(), fournisseur: fournisseur._id });
@@ -67,7 +61,6 @@ async function fetchAndStoreOvhServices() {
         }
       }
       await fournisseur.save();
-      //console.log(`Services sauvegardés pour le fournisseur:`, fournisseur.nom);
     }
   } catch (error) {
     console.error('Erreur lors de la récupération des services OVH:', error);
@@ -118,45 +111,6 @@ async function createService(req, res) {
     res.status(500).json({ message: 'Erreur lors de la création du service' });
   }
 }
-
-
-/*
-async function createService(req, res) {
-  try {
-    const { fournisseurId, ...serviceData } = req.body;
-
-    const fournisseur = await Fournisseur.findById(fournisseurId);
-    if (!fournisseur) {
-      return res.status(404).json({ message: 'Fournisseur non trouvé' });
-    }
-
-    // Vérifier si un service avec le même nom et les mêmes dates existe déjà pour ce fournisseur
-    const existingService = await Service.findOne({ fournisseur: fournisseurId, nom: serviceData.nom, date_debut: serviceData.date_debut, date_fin: serviceData.date_fin });
-    if (existingService) {
-      return res.status(409).json({ message: 'Service existe déjà pour ce fournisseur avec les mêmes dates' });
-    }
-    if (new Date(serviceData.date_debut) >= new Date(serviceData.date_fin)) {
-      return res.status(400).json({ message: 'La date de début doit être antérieure à la date de fin' });
-    }
-    
-    const newService = new Service({
-      ...serviceData,
-      statique: true, 
-      fournisseur: fournisseurId
-    });
-
-    await newService.save();
-
-    fournisseur.services.push(newService._id);
-    await fournisseur.save();
-
-    return res.status(201).json(newService);
-  } catch (error) {
-    console.error('Erreur lors de la création du service:', error);
-    res.status(500).json({ message: 'Erreur lors de la création du service' });
-  }
-}
-*/
 async function getServiceById(req, res) {
   try {
     const service = await Service.findById(req.params.id);

@@ -6,7 +6,6 @@ const chartRouteController = require('../controller/chartController');
 chartRoute.get('/services-by-fournisseur', chartRouteController.getServicesByFournisseur);
 chartRoute.get('/factures-by-fournisseur', chartRouteController.getFacturesByFournisseur);
 chartRoute.get('/reclamations-by-category', chartRouteController.getReclamationsByCategory);
-//chartRoute.get('/users-with-most-services', chartRouteController.getUsersWithMostServices);
 chartRoute.get('/clients-with-most-services', chartRouteController.getClientsWithMostServices);
 
 module.exports = chartRoute;

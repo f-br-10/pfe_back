@@ -32,21 +32,6 @@ exports.getServicesByFournisseur = async (req, res) => {
     res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 };
-
-/*
-exports.getServicesByFournisseur = async (req, res) => {
-  try {
-    const services = await Service.aggregate([
-      { $match: { deleted: false } },
-      { $group: { _id: '$fournisseur', count: { $sum: 1 } } }
-    ]);
-    res.status(200).json(services);
-  } catch (error) {
-    console.error('Erreur lors de la récupération des services par fournisseur:', error);
-    res.status(500).json({ message: 'Erreur interne du serveur' });
-  }
-};
-*/
 exports.getFacturesByFournisseur = async (req, res) => {
   try {
     const factures = await Facture.aggregate([

@@ -1,6 +1,6 @@
 // settingsController.js
 
-const Settings = require("../model/settingsModel.js");
+const Settings = require("../model/SettingsModel.js");
 const User = require ("../model/UserModel.js");
 
 // Controller pour récupérer les paramètres de notification d'un utilisateur
