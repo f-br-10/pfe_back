@@ -195,6 +195,7 @@ async function getServicesWithUser(req, res) {
     const userId = req.user._id;
     const user = await User.findById(userId).populate({
       path: 'services',
+      populate: { path: 'fournisseur' },
       match: { deleted: false }
     });
 
